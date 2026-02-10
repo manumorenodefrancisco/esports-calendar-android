@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:background="@android:color/white"
+    android:padding="30dp">
+
+    <ImageView
+        android:id="@+id/logo_principal"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/altanto"
+        android:contentDescription="Logo Altanto" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="40dp">
+
+        <Button
+            android:id="@+id/btn_iniciar_sesion"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginBottom="15dp"
+            android:background="@drawable/button_gradient"
+            app:backgroundTint="@null"
+            android:text="Iniciar Sesión"
+            android:textAllCaps="false"
+            android:textSize="18sp"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/btn_registrarse"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginBottom="15dp"
+            android:background="@drawable/button_gradient"
+            app:backgroundTint="@null"
+            android:text="Registrarse"
+            android:textAllCaps="false"
+            android:textSize="18sp"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/btn_contacto"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:backgroundTint="#757575"
+            android:text="Contacta con nosotros"
+            android:textAllCaps="false"
+            android:textSize="18sp"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+
+<!--    <LinearLayout-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:orientation="horizontal"-->
+<!--        android:gravity="bottom"-->
+<!--        android:layout_marginBottom="20dp">-->
+
+<!--        <ImageView-->
+<!--            android:layout_width="50dp"-->
+<!--            android:layout_height="50dp"-->
+<!--            android:layout_margin="15dp"-->
+<!--            android:src="@drawable/ic_instagram" />-->
+
+<!--        <ImageView-->
+<!--            android:layout_width="50dp"-->
+<!--            android:layout_height="50dp"-->
+<!--            android:layout_margin="15dp"-->
+<!--            android:src="@drawable/ic_facebook" />-->
+
+<!--        <ImageView-->
+<!--            android:layout_width="50dp"-->
+<!--            android:layout_height="50dp"-->
+<!--            android:layout_margin="15dp"-->
+<!--            android:src="@drawable/ic_twitter" />-->
+<!--    </LinearLayout>-->
+
+</LinearLayout>
