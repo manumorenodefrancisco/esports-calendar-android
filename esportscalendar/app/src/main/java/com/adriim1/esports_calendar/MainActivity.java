@@ -2,12 +2,14 @@ package com.adriim1.esports_calendar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.EditText;
+import android.widget.ImageView;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -38,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
         final EditText textInput = findViewById(R.id.textInput);
         final Button saveTextButton = findViewById(R.id.saveTextButton);
         final Button todayButton = findViewById(R.id.todayButton);
+        final ImageView navProfile = findViewById(R.id.nav_profile);
 
         int numDays = 2000;
         calendarStrings = new ArrayList<>();
@@ -83,6 +86,11 @@ public class MainActivity extends AppCompatActivity {
         });
 
         todayButton.setOnClickListener(v -> calendarView.setDate(System.currentTimeMillis()));
+
+        navProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, PerfilActivity.class);
+            startActivity(intent);
+        });
     }
 
     @Override
