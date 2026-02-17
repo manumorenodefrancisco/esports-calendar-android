@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,37 +17,38 @@ public class PerfilActivity extends AppCompatActivity {
         setContentView(R.layout.activity_perfil);
 
         final TextView profileNameDisplay = findViewById(R.id.profile_name_display);
+        final TextView profileEmailDisplay = findViewById(R.id.profile_email_display);
         final EditText editName = findViewById(R.id.edit_profile_name);
         final EditText editEmail = findViewById(R.id.edit_profile_email);
-
-        // Botones de Ajustes
-        View btnAlerts = findViewById(R.id.btn_alerts);
-        View btnDarkMode = findViewById(R.id.btn_dark_mode);
-        View btnIncidences = findViewById(R.id.btn_incidences);
-
-        // Navegación inferior
+        final EditText editAddress = findViewById(R.id.edit_profile_address);
+        final EditText editPhone = findViewById(R.id.edit_profile_phone);
+        Button btnEditProfile = findViewById(R.id.btn_edit_profile);
+        Button btnLogout = findViewById(R.id.btn_logout);
         View navHome = findViewById(R.id.nav_home);
         View navNotifications = findViewById(R.id.nav_notifications);
 
-        // Lógica para cambiar nombre (Junior style: al perder el foco o pulsar Enter)
-        editName.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) {
-                String newName = editName.getText().toString();
-                if (!newName.isEmpty()) {
-                    profileNameDisplay.setText(newName);
-                    Toast.makeText(this, "Nombre actualizado", Toast.LENGTH_SHORT).show();
-                }
+        btnEditProfile.setOnClickListener(v -> {
+            String newName = editName.getText().toString();
+            String newEmail = editEmail.getText().toString();
+            String newAddress = editAddress.getText().toString();
+            String newPhone = editPhone.getText().toString();
+
+            if (!newName.isEmpty()) {
+                profileNameDisplay.setText(newName);
             }
+            if (!newEmail.isEmpty()) {
+                profileEmailDisplay.setText(newEmail);
+            }
+
+            Toast.makeText(this, "Perfil actualizado", Toast.LENGTH_SHORT).show();
         });
 
-        // Funcionalidad de los botones de Ajustes
-        btnAlerts.setOnClickListener(v -> Toast.makeText(this, "Alertas configuradas", Toast.LENGTH_SHORT).show());
-        
-        btnDarkMode.setOnClickListener(v -> Toast.makeText(this, "Modo oscuro activado/desactivado", Toast.LENGTH_SHORT).show());
-        
-        btnIncidences.setOnClickListener(v -> Toast.makeText(this, "Abriendo reporte de incidencias", Toast.LENGTH_SHORT).show());
+        btnLogout.setOnClickListener(v -> {
+            Intent intent = new Intent(PerfilActivity.this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+        });
 
-        // Navegación
         navHome.setOnClickListener(v -> {
             Intent intent = new Intent(PerfilActivity.this, MainActivity.class);
             startActivity(intent);
