@@ -27,10 +27,8 @@ public class RegistroActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registro);
 
-        // Inicializar API
         apiService = RetrofitClient.getApiService();
 
-        // Bind views
         etName = findViewById(R.id.reg_name);
         etEmail = findViewById(R.id.reg_email);
         etPassword = findViewById(R.id.reg_password);
@@ -79,7 +77,6 @@ public class RegistroActivity extends AppCompatActivity {
                         finish();
                         
                     } else {
-                        // Registro fallido - mostrar errores
                         String errorMessage = "Error en el registro";
                         if (apiResponse.getErrors() != null && apiResponse.getErrors().length > 0) {
                             errorMessage = apiResponse.getErrors()[0];

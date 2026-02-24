@@ -28,20 +28,15 @@ public class NotificationsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notifications);
 
-        // Inicializar views
         ImageView navHome = findViewById(R.id.nav_home);
-        ImageView navNotifications = findViewById(R.id.nav_notifications);
         ImageView navProfile = findViewById(R.id.nav_profile);
         
-        // Inicializar RecyclerView
         notificationsRecyclerView = findViewById(R.id.recycler_view_notifications);
         notificationsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         
-        // Inicializar API
         apiService = RetrofitClient.getApiService();
         subscribedMatches = new ArrayList<>();
 
-        // Cargar suscripciones del usuario
         loadSubscribedEvents();
         
         // Navegación
@@ -51,10 +46,6 @@ public class NotificationsActivity extends AppCompatActivity {
             finish();
         });
         
-        navNotifications.setOnClickListener(v -> {
-            // Ya estamos en NotificationsActivity
-        });
-        
         navProfile.setOnClickListener(v -> {
             Intent intent = new Intent(NotificationsActivity.this, PerfilActivity.class);
             startActivity(intent);
@@ -62,7 +53,6 @@ public class NotificationsActivity extends AppCompatActivity {
     }
 
     private void loadSubscribedEvents() {
-        // Obtener token del usuario logueado
         SharedPreferences prefs = getSharedPreferences("EsportsCalendarPrefs", MODE_PRIVATE);
         String token = prefs.getString("accessToken", null);
         
@@ -71,7 +61,6 @@ public class NotificationsActivity extends AppCompatActivity {
             return;
         }
         
-        // Usar API con token
         ApiService apiServiceWithToken = RetrofitClient.getApiService(token);
         
         apiServiceWithToken.getSubscriptions().enqueue(new Callback<ApiService.SubscriptionsResponse>() {

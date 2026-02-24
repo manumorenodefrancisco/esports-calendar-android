@@ -52,23 +52,18 @@ public class MatchAdapter extends RecyclerView.Adapter<MatchAdapter.MatchViewHol
         }
 
         public void bind(Match match) {
-            // Nombre del match
-            String matchName = match.getMatch_name() != null && !match.getMatch_name().isEmpty() 
+            String matchName = match.getMatch_name() != null && !match.getMatch_name().isEmpty()
                 ? match.getMatch_name() 
                 : match.getVideogame_name() + " - " + match.getTournament_name();
             matchNameTV.setText(matchName);
 
-            // Liga
             leagueNameTV.setText(match.getLeague_name());
 
-            // Hora (formatear fecha)
             String time = match.getScheduled_at().substring(11, 16); // HH:MM
             timeTV.setText(time);
 
-            // Estado
             statusTV.setText(getStatusText(match.getStatus()));
 
-            // Equipos
             String teams = getTeamsText(match);
             teamsTV.setText(teams);
         }

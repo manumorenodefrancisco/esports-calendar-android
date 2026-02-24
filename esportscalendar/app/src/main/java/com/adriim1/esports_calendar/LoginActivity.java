@@ -28,12 +28,10 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // Inicializar SharedPreferences y API
         sharedPreferences = getSharedPreferences("EsportsCalendarPrefs", MODE_PRIVATE);
         editor = sharedPreferences.edit();
         apiService = RetrofitClient.getApiService();
 
-        // Bind views
         etEmail = findViewById(R.id.login_email);
         etPassword = findViewById(R.id.login_password);
         btnLogin = findViewById(R.id.btn_login_final);
@@ -69,7 +67,6 @@ public class LoginActivity extends AppCompatActivity {
                     if (apiResponse.isSuccess()) {
                         ApiResponse.LoginData data = apiResponse.getData();
                         
-                        // Guardar tokens y email en SharedPreferences
                         editor.putString("accessToken", data.getToken());
                         editor.putString("refreshToken", data.getRefreshToken());
                         editor.putString("email", email);
@@ -77,13 +74,11 @@ public class LoginActivity extends AppCompatActivity {
 
                         Toast.makeText(LoginActivity.this, "Login exitoso", Toast.LENGTH_SHORT).show();
                         
-                        // Navegar a MainActivity
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         startActivity(intent);
                         finish();
                         
                     } else {
-                        // Login fallido - mostrar errores
                         String errorMessage = "Error en el login";
                         if (apiResponse.getErrors() != null && apiResponse.getErrors().length > 0) {
                             errorMessage = apiResponse.getErrors()[0];

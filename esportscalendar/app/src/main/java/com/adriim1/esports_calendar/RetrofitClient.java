@@ -11,7 +11,6 @@ public class RetrofitClient {
     
     public static Retrofit getClient(String baseUrl) {
         if (retrofit == null) {
-            // Logging interceptor para debug
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
             logging.setLevel(HttpLoggingInterceptor.Level.BODY);
             
