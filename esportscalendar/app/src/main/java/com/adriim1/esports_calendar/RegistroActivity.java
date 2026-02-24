@@ -8,14 +8,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class RegistroActivity extends AppCompatActivity {
 
@@ -25,12 +20,17 @@ public class RegistroActivity extends AppCompatActivity {
     private EditText etPassword2;
     private Button btnRegister;
     private TextView tvBackLogin;
+    private ApiService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_registro);
 
+        // Inicializar API
+        apiService = RetrofitClient.getApiService();
+
+        // Bind views
         etName = findViewById(R.id.reg_name);
         etEmail = findViewById(R.id.reg_email);
         etPassword = findViewById(R.id.reg_password);
@@ -65,56 +65,36 @@ public class RegistroActivity extends AppCompatActivity {
     }
 
     private void registerUser(String email, String password1, String password2) {
-        new Thread(() -> {
-            try {
-                URL url = new URL("http://10.0.2.2:8000/api/registro/");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json");
-                conn.setDoOutput(true);
-
-                JSONObject body = new JSONObject();
-                body.put("email", email);
-                body.put("password1", password1);
-                body.put("password2", password2);
-
-                OutputStream os = conn.getOutputStream();
-                os.write(body.toString().getBytes("UTF-8"));
-                os.close();
-
-                int responseCode = conn.getResponseCode();
-                InputStream is = (responseCode == 200) ? conn.getInputStream() : conn.getErrorStream();
-
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                StringBuilder result = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) result.append(line);
-                reader.close();
-
-                JSONObject response = new JSONObject(result.toString());
-
-                if (response.getBoolean("success")) {
-                    runOnUiThread(() -> {
+        ApiService.RegisterRequest registerRequest = new ApiService.RegisterRequest(email, password1, password2);
+        
+        apiService.register(registerRequest).enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse apiResponse = response.body();
+                    
+                    if (apiResponse.isSuccess()) {
                         Toast.makeText(RegistroActivity.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(RegistroActivity.this, LoginActivity.class));
                         finish();
-                    });
-
-                } else {
-                    runOnUiThread(() -> {
-                        try {
-                            String error = response.getJSONArray("errors").getString(0);
-                            Toast.makeText(RegistroActivity.this, "Error: " + error, Toast.LENGTH_LONG).show();
-                        } catch (Exception e) {
-                            Toast.makeText(RegistroActivity.this, "Error en el registro", Toast.LENGTH_SHORT).show();
+                        
+                    } else {
+                        // Registro fallido - mostrar errores
+                        String errorMessage = "Error en el registro";
+                        if (apiResponse.getErrors() != null && apiResponse.getErrors().length > 0) {
+                            errorMessage = apiResponse.getErrors()[0];
                         }
-                    });
+                        Toast.makeText(RegistroActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Toast.makeText(RegistroActivity.this, "Error en el servidor", Toast.LENGTH_SHORT).show();
                 }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                runOnUiThread(() -> Toast.makeText(RegistroActivity.this, "Error de conexión", Toast.LENGTH_SHORT).show());
             }
-        }).start();
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                Toast.makeText(RegistroActivity.this, "Error de conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }

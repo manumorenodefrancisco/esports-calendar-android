@@ -9,14 +9,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -26,15 +21,19 @@ public class LoginActivity extends AppCompatActivity {
     private TextView tvGoRegister;
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
+    private ApiService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        // Inicializar SharedPreferences y API
         sharedPreferences = getSharedPreferences("EsportsCalendarPrefs", MODE_PRIVATE);
         editor = sharedPreferences.edit();
+        apiService = RetrofitClient.getApiService();
 
+        // Bind views
         etEmail = findViewById(R.id.login_email);
         etPassword = findViewById(R.id.login_password);
         btnLogin = findViewById(R.id.btn_login_final);
@@ -59,64 +58,47 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void loginUser(String email, String password) {
-        new Thread(() -> {
-            try {
-                URL url = new URL("http://10.0.2.2:8000/api/login/");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json");
-                conn.setDoOutput(true);
+        ApiService.LoginRequest loginRequest = new ApiService.LoginRequest(email, password);
+        
+        apiService.login(loginRequest).enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse apiResponse = response.body();
+                    
+                    if (apiResponse.isSuccess()) {
+                        ApiResponse.LoginData data = apiResponse.getData();
+                        
+                        // Guardar tokens y email en SharedPreferences
+                        editor.putString("accessToken", data.getToken());
+                        editor.putString("refreshToken", data.getRefreshToken());
+                        editor.putString("email", email);
+                        editor.apply();
 
-                JSONObject body = new JSONObject();
-                body.put("email", email);
-                body.put("password", password);
-
-                OutputStream os = conn.getOutputStream();
-                os.write(body.toString().getBytes("UTF-8"));
-                os.close();
-
-                int responseCode = conn.getResponseCode();
-                InputStream is = (responseCode == 200) ? conn.getInputStream() : conn.getErrorStream();
-
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                StringBuilder result = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) result.append(line);
-                reader.close();
-
-                JSONObject response = new JSONObject(result.toString());
-
-                if (response.getBoolean("success")) {
-                    JSONObject data = response.getJSONObject("data");
-                    String token = data.getString("token");
-                    String refreshToken = data.getString("refreshToken");
-
-                    editor.putString("accessToken", token);
-                    editor.putString("refreshToken", refreshToken);
-                    editor.putString("email", email);
-                    editor.apply();
-
-                    runOnUiThread(() -> {
                         Toast.makeText(LoginActivity.this, "Login exitoso", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                        
+                        // Navegar a MainActivity
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent);
                         finish();
-                    });
-
-                } else {
-                    runOnUiThread(() -> {
-                        try {
-                            String error = response.getJSONArray("errors").getString(0);
-                            Toast.makeText(LoginActivity.this, "Error: " + error, Toast.LENGTH_LONG).show();
-                        } catch (Exception e) {
-                            Toast.makeText(LoginActivity.this, "Error desconocido", Toast.LENGTH_SHORT).show();
+                        
+                    } else {
+                        // Login fallido - mostrar errores
+                        String errorMessage = "Error en el login";
+                        if (apiResponse.getErrors() != null && apiResponse.getErrors().length > 0) {
+                            errorMessage = apiResponse.getErrors()[0];
                         }
-                    });
+                        Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Toast.makeText(LoginActivity.this, "Error en el servidor", Toast.LENGTH_SHORT).show();
                 }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                runOnUiThread(() -> Toast.makeText(LoginActivity.this, "Error de conexión", Toast.LENGTH_SHORT).show());
             }
-        }).start();
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                Toast.makeText(LoginActivity.this, "Error de conexión: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }
