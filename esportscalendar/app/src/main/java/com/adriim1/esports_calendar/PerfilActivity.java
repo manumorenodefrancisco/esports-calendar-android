@@ -70,6 +70,9 @@ public class PerfilActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        navNotifications.setOnClickListener(v -> Toast.makeText(this, "No tienes notificaciones", Toast.LENGTH_SHORT).show());
+        navNotifications.setOnClickListener(v -> {
+            Intent intent = new Intent(PerfilActivity.this, NotificationsActivity.class);
+            startActivity(intent);
+        });
     }
 }

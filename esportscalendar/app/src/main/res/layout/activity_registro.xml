@@ -3,185 +3,118 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#A4A4A4">
+    android:background="#525252">
 
-    <ScrollView
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true">
+        android:layout_centerInParent="true"
+        android:layout_margin="25dp"
+        app:cardCornerRadius="20dp"
+        app:cardBackgroundColor="#D6D6D6"
+        app:cardElevation="8dp">
 
-        <androidx.cardview.widget.CardView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="25dp"
-            app:cardCornerRadius="20dp"
-            app:cardBackgroundColor="#D6D6D6"
-            app:cardElevation="8dp">
+            android:orientation="vertical"
+            android:padding="30dp">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="30dp">
+                android:text="Registro"
+                android:textColor="#000000"
+                android:textSize="24sp"
+                android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Registro"
-                    android:textColor="#000000"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Crea una cuenta para comenzar"
+                android:textColor="#555555"
+                android:textSize="14sp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Crea una cuenta para comenzar"
-                    android:textColor="#555555"
-                    android:textSize="14sp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nombre"
+                android:layout_marginTop="20dp"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="#000000" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Nombre"
-                    android:layout_marginTop="20dp"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000" />
+            <EditText
+                android:id="@+id/reg_name"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/edit_text_rounded"
+                android:hint="Tu nombre"
+                android:textSize="17sp"
+                android:paddingLeft="15dp"
+                android:inputType="textPersonName" />
 
-                <EditText
-                    android:id="@+id/reg_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="45dp"
-                    android:layout_marginTop="5dp"
-                    android:background="@drawable/edit_text_rounded"
-                    android:hint="Tu nombre"
-                    android:textSize="17sp"
-                    android:paddingLeft="15dp"
-                    android:inputType="textPersonName" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Email"
+                android:layout_marginTop="15dp"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="#000000" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Email"
-                    android:layout_marginTop="15dp"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000" />
+            <EditText
+                android:id="@+id/reg_email"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/edit_text_rounded"
+                android:hint="tu@email.com"
+                android:textSize="17sp"
+                android:paddingLeft="15dp"
+                android:inputType="textEmailAddress" />
 
-                <EditText
-                    android:id="@+id/reg_email"
-                    android:layout_width="match_parent"
-                    android:layout_height="45dp"
-                    android:layout_marginTop="5dp"
-                    android:background="@drawable/edit_text_rounded"
-                    android:hint="tu@email.com"
-                    android:textSize="17sp"
-                    android:paddingLeft="15dp"
-                    android:inputType="textEmailAddress" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Contraseña"
+                android:layout_marginTop="15dp"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="#000000" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="País"
-                    android:layout_marginTop="15dp"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000" />
+            <EditText
+                android:id="@+id/reg_password"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/edit_text_rounded"
+                android:hint="********"
+                android:textSize="17sp"
+                android:paddingLeft="15dp"
+                android:inputType="textPassword" />
 
-                <EditText
-                    android:id="@+id/reg_country"
-                    android:layout_width="match_parent"
-                    android:layout_height="45dp"
-                    android:layout_marginTop="5dp"
-                    android:background="@drawable/edit_text_rounded"
-                    android:hint="Tu país"
-                    android:textSize="17sp"
-                    android:paddingLeft="15dp"
-                    android:inputType="text" />
+            <Button
+                android:id="@+id/btn_registrar_final"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/button_gradient"
+                android:text="Registrarse"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                app:backgroundTint="@null" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Fecha de nacimiento"
-                    android:layout_marginTop="15dp"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000" />
+            <TextView
+                android:id="@+id/text_back_to_login"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:text="¿Ya tienes cuenta? Inicia sesión"
+                android:textColor="#333333" />
 
-                <EditText
-                    android:id="@+id/reg_birthdate"
-                    android:layout_width="match_parent"
-                    android:layout_height="45dp"
-                    android:layout_marginTop="5dp"
-                    android:background="@drawable/edit_text_rounded"
-                    android:hint="DD/MM/AAAA"
-                    android:textSize="17sp"
-                    android:paddingLeft="15dp"
-                    android:inputType="date"
-                    android:focusable="false"
-                    android:clickable="true" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Contraseña"
-                    android:layout_marginTop="15dp"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000" />
-
-                <EditText
-                    android:id="@+id/reg_password"
-                    android:layout_width="match_parent"
-                    android:layout_height="45dp"
-                    android:layout_marginTop="5dp"
-                    android:background="@drawable/edit_text_rounded"
-                    android:hint="********"
-                    android:textSize="17sp"
-                    android:paddingLeft="15dp"
-                    android:inputType="textPassword" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Repetir Contraseña"
-                    android:layout_marginTop="15dp"
-                    android:textSize="15sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000" />
-
-                <EditText
-                    android:id="@+id/reg_password_repeat"
-                    android:layout_width="match_parent"
-                    android:layout_height="45dp"
-                    android:layout_marginTop="5dp"
-                    android:background="@drawable/edit_text_rounded"
-                    android:hint="********"
-                    android:textSize="17sp"
-                    android:paddingLeft="15dp"
-                    android:inputType="textPassword" />
-
-                <Button
-                    android:id="@+id/btn_registrar_final"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:layout_marginTop="25dp"
-                    android:background="@drawable/button_gradient"
-                    android:text="Registrarse"
-                    android:textAllCaps="false"
-                    android:textColor="#FFFFFF"
-                    app:backgroundTint="@null" />
-
-                <TextView
-                    android:id="@+id/text_back_to_login"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="20dp"
-                    android:text="¿Ya tienes cuenta? Inicia sesión"
-                    android:textColor="#333333" />
-
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-    </ScrollView>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 </RelativeLayout>
