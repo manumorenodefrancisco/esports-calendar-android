@@ -146,13 +146,31 @@
                     app:cornerRadius="10dp"/>
             </LinearLayout>
 
+            <!-- Matches del dia seleccionado -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="12dp"
+                android:text="Partidos del dia"
+                android:textColor="@android:color/black"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_view_matches"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginBottom="16dp" />
+
             <!-- Upcoming Events Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="12dp"
-                android:text="Próximos Eventos"
+                android:text="Proximos Eventos"
                 android:textColor="@android:color/black"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -203,7 +221,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="No tienes eventos pendientes próximos"
+                    android:text="No tienes eventos pendientes proximos"
                     android:textColor="#424242"
                     android:textSize="14sp" />
             </LinearLayout>

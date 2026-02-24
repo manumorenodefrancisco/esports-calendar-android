@@ -3,152 +3,123 @@ package com.adriim1.esports_calendar;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CalendarView;
-import android.widget.EditText;
 import android.widget.ImageView;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private int currentYear, currentMonth, currentDay;
-    private int index = 0;
-    private List<String> calendarStrings;
-    private int[] days;
-    private int[] months;
-    private int[] years;
+    
+    // Variables para matches
+    private RecyclerView matchesRecyclerView;
+    private MatchAdapter matchAdapter;
+    private List<Match> allMatches;
+    private ApiService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final CalendarView calendarView = findViewById(R.id.calendarView);
-        final View dayContent = findViewById(R.id.dayContent);
-        final EditText textInput = findViewById(R.id.textInput);
-        final Button saveTextButton = findViewById(R.id.saveTextButton);
-        final Button todayButton = findViewById(R.id.todayButton);
-        final ImageView navProfile = findViewById(R.id.nav_profile);
+        CalendarView calendarView = findViewById(R.id.calendarView);
+        View dayContent = findViewById(R.id.dayContent);
+        Button todayButton = findViewById(R.id.todayButton);
+        ImageView navNotifications = findViewById(R.id.nav_notifications);
+        ImageView navProfile = findViewById(R.id.nav_profile);
+        
+        matchesRecyclerView = findViewById(R.id.recycler_view_matches);
+        matchesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        
+        apiService = RetrofitClient.getApiService();
+        allMatches = new ArrayList<>();
 
-        int numDays = 2000;
-        calendarStrings = new ArrayList<>();
-        days = new int[numDays];
-        months = new int[numDays];
-        years = new int[numDays];
-
-        readInfo();
+        loadAllMatches();
 
         calendarView.setOnDateChangeListener((@NonNull CalendarView view, int year, int month, int dayOfMonth) -> {
             currentYear = year;
             currentMonth = month;
             currentDay = dayOfMonth;
 
-            if (dayContent.getVisibility() == View.GONE) {
-                dayContent.setVisibility(View.VISIBLE);
-            }
-
-            boolean found = false;
-            for (int i = 0; i < index; i++) {
-                if (days[i] == currentDay && months[i] == currentMonth && years[i] == currentYear) {
-                    textInput.setText(calendarStrings.get(i));
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                textInput.setText("");
-            }
-        });
-
-        saveTextButton.setOnClickListener(v -> {
-            if (index < days.length) {
-                days[index] = currentDay;
-                months[index] = currentMonth;
-                years[index] = currentYear;
-                calendarStrings.add(index, textInput.getText().toString());
-                index++;
-                textInput.setText("");
-                dayContent.setVisibility(View.GONE);
-            }
+            showMatchesForDay(year, month, dayOfMonth);
         });
 
         todayButton.setOnClickListener(v -> calendarView.setDate(System.currentTimeMillis()));
 
+        // navegacion
+        /*navHome.setOnClickListener(v -> {
+        });*/
+
+        navNotifications.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, NotificationsActivity.class);
+            startActivity(intent);
+        });
+        
         navProfile.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, PerfilActivity.class);
             startActivity(intent);
         });
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        saveInfo();
-    }
-
-    private void saveInfo() {
-        try {
-            File file = new File(getFilesDir(), "saved");
-            File daysFile = new File(getFilesDir(), "days");
-            File monthsFile = new File(getFilesDir(), "months");
-            File yearsFile = new File(getFilesDir(), "years");
-
-            try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
-                 BufferedWriter bwDays = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(daysFile)));
-                 BufferedWriter bwMonths = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(monthsFile)));
-                 BufferedWriter bwYears = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(yearsFile)))) {
-
-                for (int i = 0; i < index; i++) {
-                    bw.write(calendarStrings.get(i));
-                    bw.newLine();
-                    bwDays.write(days[i]);
-                    bwMonths.write(months[i]);
-                    bwYears.write(years[i]);
+    private void loadAllMatches() {
+        SharedPreferences prefs = getSharedPreferences("EsportsCalendarPrefs", MODE_PRIVATE);
+        String token = prefs.getString("accessToken", null);
+        
+        ApiService apiServiceConToken = token != null ? RetrofitClient.getApiService(token) : RetrofitClient.getApiService();
+        
+        apiServiceConToken.getEvents().enqueue(new Callback<ApiService.EventsResponse>() {
+            @Override
+            public void onResponse(Call<ApiService.EventsResponse> call, Response<ApiService.EventsResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    allMatches = response.body().getData();
+                    Log.d(TAG, "Cargados " + allMatches.size() + " matches");
+                } else {
+                    Log.e(TAG, "Error cargando matches - Response: " + response.code());
                 }
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Error saving info", e);
-        }
+
+            @Override
+            public void onFailure(Call<ApiService.EventsResponse> call, Throwable t) {
+                Log.e(TAG, "Error de conexion cargando matches", t);
+            }
+        });
     }
 
-    private void readInfo() {
-        File file = new File(getFilesDir(), "saved");
-        File daysFile = new File(getFilesDir(), "days");
-        File monthsFile = new File(getFilesDir(), "months");
-        File yearsFile = new File(getFilesDir(), "years");
-
-        if (!file.exists()) return;
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-             BufferedReader readerDays = new BufferedReader(new InputStreamReader(new FileInputStream(daysFile)));
-             BufferedReader readerMonths = new BufferedReader(new InputStreamReader(new FileInputStream(monthsFile)));
-             BufferedReader readerYears = new BufferedReader(new InputStreamReader(new FileInputStream(yearsFile)))) {
-
-            String line;
-            int i = 0;
-            while ((line = reader.readLine()) != null && i < days.length) {
-                calendarStrings.add(line);
-                days[i] = readerDays.read();
-                months[i] = readerMonths.read();
-                years[i] = readerYears.read();
-                i++;
+    private void showMatchesForDay(int year, int month, int day) {
+        List<Match> dayMatches = new ArrayList<>();
+        
+        String selectedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, day);
+        Log.d(TAG, "Fecha seleccionada: " + selectedDate);
+        
+        for (Match match : allMatches) {
+            if (match.getScheduled_at() != null && match.getScheduled_at().length() >= 10) {
+                String matchDate = match.getScheduled_at().substring(0, 10); // "2026-02-23"
+                
+                if (matchDate.equals(selectedDate)) {
+                    dayMatches.add(match);
+                    Log.d(TAG, "Match anadido: " + match.getVideogame_name());
+                }
             }
-            index = i;
-        } catch (Exception e) {
-            Log.e(TAG, "Error reading info", e);
         }
+        
+        Log.d(TAG, "Total matches para el dia: " + dayMatches.size());
+        
+        matchAdapter = new MatchAdapter(dayMatches);
+        matchesRecyclerView.setAdapter(matchAdapter);
+        
+        Log.d(TAG, "RecyclerView actualizado con " + dayMatches.size() + " items");
     }
 }
