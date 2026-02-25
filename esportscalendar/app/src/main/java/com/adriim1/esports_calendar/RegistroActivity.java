@@ -42,7 +42,7 @@ public class RegistroActivity extends AppCompatActivity {
             String password1 = etPassword.getText().toString().trim();
             String password2 = etPassword2.getText().toString().trim();
 
-            if (name.isEmpty() || email.isEmpty() || password1.isEmpty() || password2.isEmpty()) {
+            if (email.isEmpty() || password1.isEmpty() || password2.isEmpty()) {
                 Toast.makeText(RegistroActivity.this, "Rellena todos los campos", Toast.LENGTH_SHORT).show();
                 return;
             }
