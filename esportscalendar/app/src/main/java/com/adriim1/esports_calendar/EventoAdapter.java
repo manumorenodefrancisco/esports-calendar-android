@@ -12,9 +12,16 @@ import java.util.List;
 public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoViewHolder> {
 
     private List<Evento> eventoList;
+    private boolean useRecomendadoLayout;
 
     public EventoAdapter(List<Evento> eventoList) {
         this.eventoList = eventoList;
+        this.useRecomendadoLayout = false;
+    }
+
+    public EventoAdapter(List<Evento> eventoList, boolean useRecomendadoLayout) {
+        this.eventoList = eventoList;
+        this.useRecomendadoLayout = useRecomendadoLayout;
     }
 
     public List<Evento> getEventoList() {
@@ -24,7 +31,8 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
     @NonNull
     @Override
     public EventoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_match, parent, false);
+        int layout = useRecomendadoLayout ? R.layout.item_match_recomendado : R.layout.item_match;
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false);
         return new EventoViewHolder(itemView);
     }
 
@@ -61,9 +69,12 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
                 : evento.getVideogame_name() + " - " + evento.getTournament_name();
             matchNameTV.setText(matchName);
 
-            leagueNameTV.setText(evento.getLeague_name());
+            leagueNameTV.setText(evento.getLeague_name() != null ? evento.getLeague_name() : "Liga por determinar");
 
-            String time = evento.getScheduled_at().substring(11, 16); // HH:MM
+            String time = "Sin hora";
+            if (evento.getScheduled_at() != null && evento.getScheduled_at().length() >= 16) {
+                time = evento.getScheduled_at().substring(11, 16); // HH:MM
+            }
             timeTV.setText(time);
 
             statusTV.setText(getStatusText(evento.getStatus()));
@@ -73,6 +84,9 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
         }
 
         private String getStatusText(String status) {
+            if (status == null) {
+                return "SIN ESTADO";
+            }
             switch (status) {
                 case "running": return "EN VIVO";
                 case "finished": return "FINALIZADO";
@@ -83,7 +97,11 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
 
         private String getTeamsText(Evento evento) {
             if (evento.getOpponents() != null && evento.getOpponents().size() >= 2) {
-                return evento.getOpponents().get(0).getName() + " vs " + evento.getOpponents().get(1).getName();
+                String team1Name = evento.getOpponents().get(0).getName() != null ? 
+                    evento.getOpponents().get(0).getName() : "Equipo 1";
+                String team2Name = evento.getOpponents().get(1).getName() != null ? 
+                    evento.getOpponents().get(1).getName() : "Equipo 2";
+                return team1Name + " vs " + team2Name;
             }
             return "Equipos por determinar";
         }

@@ -27,7 +27,7 @@ public class HomeActivity extends AppCompatActivity {
         });
 
         btnContact.setOnClickListener(v -> {
-            // Lógica de contacto
+            // contacto
         });
     }
 }

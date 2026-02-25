@@ -4,6 +4,7 @@ public class ApiResponse {
     private boolean success;
     private LoginData data;
     private String[] errors;
+    private String message;
 
     public boolean isSuccess() {
         return success;
@@ -27,6 +28,14 @@ public class ApiResponse {
 
     public void setErrors(String[] errors) {
         this.errors = errors;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
 

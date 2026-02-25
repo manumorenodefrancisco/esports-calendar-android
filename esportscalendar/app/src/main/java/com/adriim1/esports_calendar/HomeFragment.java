@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.EditText;
+import android.widget.ImageButton;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -30,6 +32,8 @@ public class HomeFragment extends Fragment {
     private EventoAdapter matchAdapter;
     private List<Evento> allMatches;
     private ApiService apiService;
+    private RecyclerView recomendadosRecyclerView;
+    private EventoAdapter recomendadosAdapter;
 
     @Nullable
     @Override
@@ -39,14 +43,22 @@ public class HomeFragment extends Fragment {
         CalendarView calendarView = view.findViewById(R.id.calendarView);
         View dayContent = view.findViewById(R.id.dayContent);
         Button todayButton = view.findViewById(R.id.todayButton);
+        EditText searchEditText = view.findViewById(R.id.edit_text_search);
+        ImageButton searchButton = view.findViewById(R.id.btn_search);
         
         matchesRecyclerView = view.findViewById(R.id.recycler_view_matches);
         matchesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        
+        recomendadosRecyclerView = view.findViewById(R.id.rv_matches_recomendados);
+        recomendadosRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         
         apiService = RetrofitClient.getApiService();
         allMatches = new ArrayList<>();
         matchAdapter = new EventoAdapter(new ArrayList<>());
         matchesRecyclerView.setAdapter(matchAdapter);
+        
+        recomendadosAdapter = new EventoAdapter(new ArrayList<>(), true);
+        recomendadosRecyclerView.setAdapter(recomendadosAdapter);
 
         loadAllMatches();
 
@@ -58,6 +70,11 @@ public class HomeFragment extends Fragment {
         });
 
         todayButton.setOnClickListener(v -> calendarView.setDate(System.currentTimeMillis()));
+        
+        searchButton.setOnClickListener(v -> {
+            String searchText = searchEditText.getText().toString().trim();
+            Search(searchText);
+        });
 
         return view;
     }
@@ -69,6 +86,7 @@ public class HomeFragment extends Fragment {
         currentDay = calendar.get(java.util.Calendar.DAY_OF_MONTH);
         
         loadMatchesForDate(currentYear, currentMonth, currentDay);
+        loadRecommendedMatches();
     }
 
     private void loadMatchesForDate(int year, int month, int day) {
@@ -78,16 +96,14 @@ public class HomeFragment extends Fragment {
         ApiService apiServiceConToken = token != null ? RetrofitClient.getApiService(token) : RetrofitClient.getApiService();
         
         String date = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, day);
-        Log.d(TAG, "Cargando partidos para fecha: " + date);
         
         apiServiceConToken.getEventsByDate(date).enqueue(new Callback<ApiService.EventsResponse>() {
             @Override
             public void onResponse(Call<ApiService.EventsResponse> call, Response<ApiService.EventsResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     List<Evento> dayMatches = response.body().getData();
-                    Log.d(TAG, "Partidos del día cargados: " + (dayMatches != null ? dayMatches.size() : "null"));
                     
-                    // Actualizar el adapter directamente con los partidos del día
+                    //actualizar adapter
                     if (matchAdapter != null && matchAdapter.getEventoList() != null) {
                         matchAdapter.getEventoList().clear();
                         if (dayMatches != null) {
@@ -98,13 +114,99 @@ public class HomeFragment extends Fragment {
                         Log.e(TAG, "matchAdapter o getEventoList() es null");
                     }
                 } else {
-                    Log.e(TAG, "Error en respuesta");
                 }
             }
 
             @Override
             public void onFailure(Call<ApiService.EventsResponse> call, Throwable t) {
                 Log.e(TAG, "Error de conexion cargando matches para fecha: " + date, t);
+            }
+        });
+    }
+
+    private void loadRecommendedMatches() {
+        SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
+        String token = prefs.getString("accessToken", null);
+        
+        ApiService apiServiceConToken = token != null ? RetrofitClient.getApiService(token) : RetrofitClient.getApiService();
+        
+        
+        apiServiceConToken.getRecommendedEvents().enqueue(new Callback<ApiService.EventsResponse>() {
+            @Override
+            public void onResponse(Call<ApiService.EventsResponse> call, Response<ApiService.EventsResponse> response) {
+                
+                try {
+                    if (response.isSuccessful() && response.body() != null) {
+                        
+                        if (response.body().isSuccess()) {
+                            List<Evento> recommendedMatches = response.body().getData();
+                            
+                            //actualizar adapter
+                            if (recomendadosAdapter != null && recomendadosAdapter.getEventoList() != null) {
+                                recomendadosAdapter.getEventoList().clear();
+                                if (recommendedMatches != null) {
+                                    recomendadosAdapter.getEventoList().addAll(recommendedMatches);
+                                }
+                                recomendadosAdapter.notifyDataSetChanged();
+                            } else {
+                                Log.e(TAG, "recomendadosAdapter o getEventoList() es null");
+                            }
+                        } else {
+                        }
+                    } else {
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Excepción procesando respuesta", e);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiService.EventsResponse> call, Throwable t) {
+                Log.e(TAG, "Error de conexion cargando partidos recomendados", t);
+            }
+        });
+    }
+
+    private void Search(String searchText) {
+        SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
+        String token = prefs.getString("accessToken", null);
+        
+        ApiService apiServiceConToken = token != null ? RetrofitClient.getApiService(token) : RetrofitClient.getApiService();
+        
+        if (searchText.isEmpty()) {
+            loadAllMatches();
+            return;
+        }
+        
+        
+        apiServiceConToken.searchEvents(null, null, searchText, null, null).enqueue(new Callback<ApiService.EventsResponse>() {
+            @Override
+            public void onResponse(Call<ApiService.EventsResponse> call, Response<ApiService.EventsResponse> response) {
+                
+                try {
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        List<Evento> searchResults = response.body().getData();
+                        
+                        //actualizar adapter
+                        if (matchAdapter != null && matchAdapter.getEventoList() != null) {
+                            matchAdapter.getEventoList().clear();
+                            if (searchResults != null) {
+                                matchAdapter.getEventoList().addAll(searchResults);
+                            }
+                            matchAdapter.notifyDataSetChanged();
+                        } else {
+                            Log.e(TAG, "matchAdapter o getEventoList() es null");
+                        }
+                    } else {
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Excepción procesando respuesta búsqueda", e);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiService.EventsResponse> call, Throwable t) {
+                Log.e(TAG, "Error de conexion en búsqueda", t);
             }
         });
     }

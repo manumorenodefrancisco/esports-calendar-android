@@ -21,8 +21,16 @@ public interface ApiService {
     @GET("api/events/")
     Call<EventsResponse> getEventsByDate(@Query("date") String date);
     
+    @GET("api/events/")
+    Call<EventsResponse> searchEvents(@Query("id") String id, @Query("external_id") String externalId, 
+                                     @Query("search") String search, @Query("videogame") String videogame, 
+                                     @Query("status") String status);
+    
     @GET("api/subscriptions/")
     Call<SubscriptionsResponse> getSubscriptions();
+    
+    @GET("api/preferences/recommended/")
+    Call<EventsResponse> getRecommendedEvents();
     
     public static class LoginRequest {
         private String email;
