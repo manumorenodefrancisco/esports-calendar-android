@@ -7,4 +7,11 @@
     <style name="CircleImage" parent="">
         <item name="cornerSize">50%</item>
     </style>
+
+    <style name="CustomCalendar" parent="android:Widget.CalendarView">
+        <item name="android:selectedWeekBackgroundColor">#E3F2FD</item>
+        <item name="android:focusedMonthDateColor">#000000</item>
+        <item name="android:unfocusedMonthDateColor">#757575</item>
+        <item name="android:weekSeparatorLineColor">#00000000</item>
+    </style>
 </resources>
