@@ -4,6 +4,7 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
 import java.util.List;
 
 public interface ApiService {
@@ -16,6 +17,9 @@ public interface ApiService {
     
     @GET("api/events/")
     Call<EventsResponse> getEvents();
+    
+    @GET("api/events/")
+    Call<EventsResponse> getEventsByDate(@Query("date") String date);
     
     @GET("api/subscriptions/")
     Call<SubscriptionsResponse> getSubscriptions();
@@ -53,17 +57,19 @@ public interface ApiService {
     
     public static class EventsResponse {
         private boolean success;
-        private List<Match> data;
+        private List<Evento> data;
+        private int count;
         
         public boolean isSuccess() { return success; }
-        public List<Match> getData() { return data; }
+        public List<Evento> getData() { return data; }
+        public int getCount() { return count; }
     }
     
     public static class SubscriptionsResponse {
         private boolean success;
-        private List<Match> data;
+        private List<Suscripcion> data;
         
         public boolean isSuccess() { return success; }
-        public List<Match> getData() { return data; }
+        public List<Suscripcion> getData() { return data; }
     }
 }

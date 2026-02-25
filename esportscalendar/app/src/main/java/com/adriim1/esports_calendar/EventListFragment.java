@@ -1,5 +1,7 @@
 package com.adriim1.esports_calendar;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,11 +15,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class EventListFragment extends Fragment {
 
     private RecyclerView recyclerView;
-    private EventAdapter eventAdapterRV;
-    private List<Event> eventList;
+    private EventoAdapter eventAdapterRV;
+    private List<Evento> eventList;
+    private ApiService apiService;
 
     @Nullable
     @Override
@@ -27,11 +34,42 @@ public class EventListFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         eventList = new ArrayList<>();
-        //eventList.add(new Event("Final de League of Legends", "2024-11-02"));
-
-        eventAdapterRV = new EventAdapter(eventList);
+        eventAdapterRV = new EventoAdapter(eventList);
         recyclerView.setAdapter(eventAdapterRV);
 
+        apiService = RetrofitClient.getApiService(getToken());
+        cargarSubscripciones();
+
         return view;
+    }
+
+    private void cargarSubscripciones() {
+        Call<ApiService.SubscriptionsResponse> call = apiService.getSubscriptions();
+        call.enqueue(new Callback<ApiService.SubscriptionsResponse>() {
+            @Override
+            public void onResponse(Call<ApiService.SubscriptionsResponse> call, Response<ApiService.SubscriptionsResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    List<Suscripcion> suscripciones = response.body().getData();
+                    eventList.clear();
+                    
+                    for (Suscripcion sus : suscripciones) {
+                        Evento evento = sus.getEvento();
+                        if (evento != null) {
+                            eventList.add(evento);
+                        }
+                    }
+                    eventAdapterRV.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiService.SubscriptionsResponse> call, Throwable t) {
+            }
+        });
+    }
+
+    private String getToken() {
+        SharedPreferences prefs = getContext().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        return prefs.getString("token", "");
     }
 }

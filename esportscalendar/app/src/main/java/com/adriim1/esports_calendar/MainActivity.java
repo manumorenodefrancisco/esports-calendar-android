@@ -27,22 +27,32 @@ public class MainActivity extends AppCompatActivity {
         ViewPagerAdapter adapter = new ViewPagerAdapter(this);
         viewPager.setAdapter(adapter);
 
-        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageSelected(int position) {
-                updateNavIcons(position);
-            }
-        });
-
         navHome.setOnClickListener(v -> viewPager.setCurrentItem(0));
         navNotifications.setOnClickListener(v -> viewPager.setCurrentItem(1));
         navProfile.setOnClickListener(v -> viewPager.setCurrentItem(2));
-    }
 
-    private void updateNavIcons(int position) {
-        navHome.setAlpha(position == 0 ? 1.0f : 0.5f);
-        navNotifications.setAlpha(position == 1 ? 1.0f : 0.5f);
-        navProfile.setAlpha(position == 2 ? 1.0f : 0.5f);
+        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                navHome.setAlpha(0.5f);//semi-transparencia
+                navNotifications.setAlpha(0.5f);
+                navProfile.setAlpha(0.5f);
+                
+                switch (position) {
+                    case 0:
+                        navHome.setAlpha(1.0f);//opacidad total
+                        break;
+                    case 1:
+                        navNotifications.setAlpha(1.0f);
+                        break;
+                    case 2:
+                        navProfile.setAlpha(1.0f);
+                        break;
+                }
+            }
+        });
+
+        navHome.setAlpha(1.0f);//por defecto
     }
 
     private static class ViewPagerAdapter extends FragmentStateAdapter {

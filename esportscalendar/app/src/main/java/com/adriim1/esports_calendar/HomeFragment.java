@@ -27,8 +27,8 @@ public class HomeFragment extends Fragment {
     private static final String TAG = "HomeFragment";
     private int currentYear, currentMonth, currentDay;
     private RecyclerView matchesRecyclerView;
-    private MatchAdapter matchAdapter;
-    private List<Match> allMatches;
+    private EventoAdapter matchAdapter;
+    private List<Evento> allMatches;
     private ApiService apiService;
 
     @Nullable
@@ -45,6 +45,8 @@ public class HomeFragment extends Fragment {
         
         apiService = RetrofitClient.getApiService();
         allMatches = new ArrayList<>();
+        matchAdapter = new EventoAdapter(new ArrayList<>());
+        matchesRecyclerView.setAdapter(matchAdapter);
 
         loadAllMatches();
 
@@ -52,7 +54,7 @@ public class HomeFragment extends Fragment {
             currentYear = year;
             currentMonth = month;
             currentDay = dayOfMonth;
-            showMatchesForDay(year, month, dayOfMonth);
+            loadMatchesForDate(year, month, dayOfMonth);
         });
 
         todayButton.setOnClickListener(v -> calendarView.setDate(System.currentTimeMillis()));
@@ -61,39 +63,49 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadAllMatches() {
+        java.util.Calendar calendar = java.util.Calendar.getInstance();
+        currentYear = calendar.get(java.util.Calendar.YEAR);
+        currentMonth = calendar.get(java.util.Calendar.MONTH);
+        currentDay = calendar.get(java.util.Calendar.DAY_OF_MONTH);
+        
+        loadMatchesForDate(currentYear, currentMonth, currentDay);
+    }
+
+    private void loadMatchesForDate(int year, int month, int day) {
         SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
         String token = prefs.getString("accessToken", null);
         
         ApiService apiServiceConToken = token != null ? RetrofitClient.getApiService(token) : RetrofitClient.getApiService();
         
-        apiServiceConToken.getEvents().enqueue(new Callback<ApiService.EventsResponse>() {
+        String date = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, day);
+        Log.d(TAG, "Cargando partidos para fecha: " + date);
+        
+        apiServiceConToken.getEventsByDate(date).enqueue(new Callback<ApiService.EventsResponse>() {
             @Override
             public void onResponse(Call<ApiService.EventsResponse> call, Response<ApiService.EventsResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    allMatches = response.body().getData();
+                    List<Evento> dayMatches = response.body().getData();
+                    Log.d(TAG, "Partidos del día cargados: " + (dayMatches != null ? dayMatches.size() : "null"));
+                    
+                    // Actualizar el adapter directamente con los partidos del día
+                    if (matchAdapter != null && matchAdapter.getEventoList() != null) {
+                        matchAdapter.getEventoList().clear();
+                        if (dayMatches != null) {
+                            matchAdapter.getEventoList().addAll(dayMatches);
+                        }
+                        matchAdapter.notifyDataSetChanged();
+                    } else {
+                        Log.e(TAG, "matchAdapter o getEventoList() es null");
+                    }
+                } else {
+                    Log.e(TAG, "Error en respuesta");
                 }
             }
 
             @Override
             public void onFailure(Call<ApiService.EventsResponse> call, Throwable t) {
-                Log.e(TAG, "Error de conexion cargando matches", t);
+                Log.e(TAG, "Error de conexion cargando matches para fecha: " + date, t);
             }
         });
-    }
-
-    private void showMatchesForDay(int year, int month, int day) {
-        List<Match> dayMatches = new ArrayList<>();
-        String selectedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, day);
-        
-        for (Match match : allMatches) {
-            if (match.getScheduled_at() != null && match.getScheduled_at().length() >= 10) {
-                String matchDate = match.getScheduled_at().substring(0, 10);
-                if (matchDate.equals(selectedDate)) {
-                    dayMatches.add(match);
-                }
-            }
-        }
-        matchAdapter = new MatchAdapter(dayMatches);
-        matchesRecyclerView.setAdapter(matchAdapter);
     }
 }

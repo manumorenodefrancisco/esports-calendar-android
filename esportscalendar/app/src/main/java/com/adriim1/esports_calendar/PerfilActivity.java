@@ -71,8 +71,9 @@ public class PerfilActivity extends AppCompatActivity {
         });
 
         navNotifications.setOnClickListener(v -> {
-            Intent intent = new Intent(PerfilActivity.this, NotificationsActivity.class);
+            Intent intent = new Intent(PerfilActivity.this, MainActivity.class);
             startActivity(intent);
+            finish();
         });
     }
 }

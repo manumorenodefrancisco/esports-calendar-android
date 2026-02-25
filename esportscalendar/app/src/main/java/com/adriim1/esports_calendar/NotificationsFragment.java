@@ -21,19 +21,21 @@ import java.util.List;
 public class NotificationsFragment extends Fragment {
 
     private static final String TAG = "NotificationsFragment";
-    private RecyclerView notificationsRecyclerView;
-    private MatchAdapter notificationAdapter;
-    private List<Match> subscribedMatches;
+    private RecyclerView subscriptionsRecyclerView;
+    private EventoAdapter subscriptionAdapter;
+    private List<Evento> subscriptionEvents;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_notifications, container, false);
 
-        notificationsRecyclerView = view.findViewById(R.id.recycler_view_notifications);
-        notificationsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        subscriptionsRecyclerView = view.findViewById(R.id.recycler_view_notifications);
+        subscriptionsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         
-        subscribedMatches = new ArrayList<>();
+        subscriptionEvents = new ArrayList<>();
+        subscriptionAdapter = new EventoAdapter(subscriptionEvents);
+        subscriptionsRecyclerView.setAdapter(subscriptionAdapter);
         loadSubscribedEvents();
 
         return view;
@@ -50,9 +52,19 @@ public class NotificationsFragment extends Fragment {
             @Override
             public void onResponse(Call<ApiService.SubscriptionsResponse> call, Response<ApiService.SubscriptionsResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    subscribedMatches = response.body().getData();
-                    notificationAdapter = new MatchAdapter(subscribedMatches);
-                    notificationsRecyclerView.setAdapter(notificationAdapter);
+                    List<Suscripcion> suscripciones = response.body().getData();
+                    subscriptionEvents = new ArrayList<>();
+                    
+                    for (Suscripcion sus : suscripciones) {
+                        Evento evento = sus.getEvento();
+                        if (evento != null) {
+                            subscriptionEvents.add(evento);
+                        }
+                    }
+                    
+                    subscriptionAdapter.getEventoList().clear();
+                    subscriptionAdapter.getEventoList().addAll(subscriptionEvents);
+                    subscriptionAdapter.notifyDataSetChanged();
                 }
             }
 

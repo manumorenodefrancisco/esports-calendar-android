@@ -1,17 +1,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.Esportscalendar" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="android:windowFullscreen">true</item>
-        <item name="windowNoTitle">true</item>
+        <item name="android:statusBarColor">#000000</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
-
     <style name="CircleImage" parent="">
         <item name="cornerSize">50%</item>
     </style>
 
     <style name="CustomCalendar" parent="android:Widget.CalendarView">
         <item name="android:selectedWeekBackgroundColor">#E3F2FD</item>
-        <item name="android:focusedMonthDateColor">#000000</item>
+        <item name="android:focusedMonthDateColor">#1565C0</item>
         <item name="android:unfocusedMonthDateColor">#757575</item>
-        <item name="android:weekSeparatorLineColor">#00000000</item>
+        <item name="android:weekSeparatorLineColor">#1565C000</item>
+        <item name="android:weekDayTextAppearance">@style/WeekDayText</item>
+        <item name="android:weekNumberColor">#1565C0</item>
+    </style>
+    <style name="WeekDayText" parent="android:TextAppearance.Small">
+        <item name="android:textColor">#1565C0</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">14sp</item>
     </style>
 </resources>
