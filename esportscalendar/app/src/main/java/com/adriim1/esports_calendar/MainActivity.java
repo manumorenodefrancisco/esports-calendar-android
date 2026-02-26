@@ -5,13 +5,13 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.viewpager2.adapter.FragmentStateAdapter;
-import androidx.viewpager2.widget.ViewPager2;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ViewPager2 viewPager;
+    private ViewPager viewPager;
     private ImageView navHome, navNotifications, navProfile;
 
     @Override
@@ -24,14 +24,17 @@ public class MainActivity extends AppCompatActivity {
         navNotifications = findViewById(R.id.nav_notifications);
         navProfile = findViewById(R.id.nav_profile);
 
-        ViewPagerAdapter adapter = new ViewPagerAdapter(this);
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(adapter);
 
         navHome.setOnClickListener(v -> viewPager.setCurrentItem(0));
         navNotifications.setOnClickListener(v -> viewPager.setCurrentItem(1));
         navProfile.setOnClickListener(v -> viewPager.setCurrentItem(2));
 
-        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
+
             @Override
             public void onPageSelected(int position) {
                 navHome.setAlpha(0.5f);//semi-transparencia
@@ -50,19 +53,22 @@ public class MainActivity extends AppCompatActivity {
                         break;
                 }
             }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {}
         });
 
-        navHome.setAlpha(1.0f);//por defecto
+        navHome.setAlpha(1.0f);
     }
 
-    private static class ViewPagerAdapter extends FragmentStateAdapter {
-        public ViewPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
-            super(fragmentActivity);
+    private static class ViewPagerAdapter extends FragmentPagerAdapter {
+        public ViewPagerAdapter(@NonNull FragmentManager fragmentManager) {
+            super(fragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         }
 
         @NonNull
         @Override
-        public Fragment createFragment(int position) {
+        public Fragment getItem(int position) {
             switch (position) {
                 case 0: return new HomeFragment();
                 case 1: return new NotificationsFragment();
@@ -72,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public int getItemCount() {
+        public int getCount() {
             return 3;
         }
     }

@@ -3,6 +3,7 @@ package com.adriim1.esports_calendar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -53,6 +54,7 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
         TextView timeTV;
         TextView statusTV;
         TextView teamsTV;
+        ImageButton suscribirBtn;
 
         public EventoViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -61,12 +63,11 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
             timeTV = itemView.findViewById(R.id.text_view_time);
             statusTV = itemView.findViewById(R.id.text_view_status);
             teamsTV = itemView.findViewById(R.id.text_view_teams);
+            suscribirBtn = itemView.findViewById(R.id.btn_suscribir);
         }
 
         public void bind(Evento evento) {
-            String matchName = evento.getMatch_name() != null && !evento.getMatch_name().isEmpty()
-                ? evento.getMatch_name() 
-                : evento.getVideogame_name() + " - " + evento.getTournament_name();
+            String matchName = evento.getMatch_name() != null && !evento.getMatch_name().isEmpty() ? evento.getMatch_name() : evento.getVideogame_name() + " - " + evento.getTournament_name();
             matchNameTV.setText(matchName);
 
             leagueNameTV.setText(evento.getLeague_name() != null ? evento.getLeague_name() : "Liga por determinar");
@@ -81,6 +82,11 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
 
             String teams = getTeamsText(evento);
             teamsTV.setText(teams);
+
+            suscribirBtn.setOnClickListener(v -> {
+                
+                android.widget.Toast.makeText(itemView.getContext(), "Suscrito a: " + matchName, android.widget.Toast.LENGTH_SHORT).show();
+            });
         }
 
         private String getStatusText(String status) {
