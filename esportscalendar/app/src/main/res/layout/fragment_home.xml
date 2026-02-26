@@ -92,7 +92,7 @@
                         android:textColor="#0D1B6D"/>
 
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_nuevo_evento"
+                        android:id="@+id/btn_nueva_anotacion"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
@@ -114,6 +114,7 @@
                         android:layout_height="match_parent"
                         android:theme="@style/CustomCalendar"
                         />
+
                 </FrameLayout>
 
                 <!--<TextView

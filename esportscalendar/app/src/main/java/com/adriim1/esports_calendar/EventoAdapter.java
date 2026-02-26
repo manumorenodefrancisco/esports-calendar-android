@@ -3,7 +3,6 @@ package com.adriim1.esports_calendar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -54,7 +53,7 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
         TextView timeTV;
         TextView statusTV;
         TextView teamsTV;
-        ImageButton suscribirBtn;
+        ImageView suscribirBtn;
 
         public EventoViewHolder(@NonNull View itemView) {
             super(itemView);

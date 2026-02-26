@@ -45,6 +45,7 @@ public class HomeFragment extends Fragment {
         Button todayButton = view.findViewById(R.id.todayButton);
         EditText searchEditText = view.findViewById(R.id.edit_text_search);
         ImageButton searchButton = view.findViewById(R.id.btn_search);
+        Button btnNuevaAnotacion = view.findViewById(R.id.btn_nueva_anotacion);
         
         matchesRecyclerView = view.findViewById(R.id.recycler_view_matches);
         matchesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -74,6 +75,10 @@ public class HomeFragment extends Fragment {
         searchButton.setOnClickListener(v -> {
             String searchText = searchEditText.getText().toString().trim();
             Search(searchText);
+        });
+        
+        btnNuevaAnotacion.setOnClickListener(v -> {
+            crearAnotacion();
         });
 
         return view;
@@ -207,6 +212,45 @@ public class HomeFragment extends Fragment {
             @Override
             public void onFailure(Call<ApiService.EventsResponse> call, Throwable t) {
                 Log.e(TAG, "Error de conexion en búsqueda", t);
+            }
+        });
+    }
+    
+    private void crearAnotacion() {
+        SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
+        String token = prefs.getString("accessToken", null);
+        
+        if (token == null) {
+            android.widget.Toast.makeText(getContext(), "Debes iniciar sesión", android.widget.Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        String fecha = String.format(Locale.getDefault(), "%04d-%02d-%02dT10:00:00", currentYear, currentMonth + 1, currentDay);
+        
+        ApiService.AnotacionRequest request = new ApiService.AnotacionRequest(
+            "Mi anotación", 
+            "Descripción de la anotación", 
+            fecha
+        );
+        
+        ApiService apiServiceConToken = RetrofitClient.getApiService(token);
+        apiServiceConToken.createAnotacion(request).enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    if (response.body().isSuccess()) {
+                        android.widget.Toast.makeText(getContext(), "Anotación creada", android.widget.Toast.LENGTH_SHORT).show();
+                    } else {
+                        android.widget.Toast.makeText(getContext(), "Error al crear anotación", android.widget.Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    android.widget.Toast.makeText(getContext(), "Error en el servidor", android.widget.Toast.LENGTH_SHORT).show();
+                }
+            }
+            
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                android.widget.Toast.makeText(getContext(), "Error de conexión", android.widget.Toast.LENGTH_SHORT).show();
             }
         });
     }

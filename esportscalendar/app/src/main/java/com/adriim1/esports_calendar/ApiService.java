@@ -32,6 +32,9 @@ public interface ApiService {
     @GET("api/preferences/recommended/")
     Call<EventsResponse> getRecommendedEvents();
     
+    @POST("api/anotaciones/")
+    Call<ApiResponse> createAnotacion(@Body AnotacionRequest anotacionRequest);
+    
     public static class LoginRequest {
         private String email;
         private String password;
@@ -79,5 +82,21 @@ public interface ApiService {
         
         public boolean isSuccess() { return success; }
         public List<Suscripcion> getData() { return data; }
+    }
+    
+    public static class AnotacionRequest {
+        private String titulo;
+        private String descripcion;
+        private String fecha_hora;
+        
+        public AnotacionRequest(String titulo, String descripcion, String fecha_hora) {
+            this.titulo = titulo;
+            this.descripcion = descripcion;
+            this.fecha_hora = fecha_hora;
+        }
+        
+        public String getTitulo() { return titulo; }
+        public String getDescripcion() { return descripcion; }
+        public String getFecha_hora() { return fecha_hora; }
     }
 }
