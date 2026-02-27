@@ -3,6 +3,7 @@ package com.adriim1.esports_calendar;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,7 @@ import java.util.Map;
 
 public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoViewHolder> {
 
+    private static final String TAG = "EventoAdapter";
     private List<Evento> eventoList;
     private boolean useRecomendadoLayout;
 
@@ -77,7 +79,9 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
         }
 
         public void bind(Evento evento) {
-            String matchName = evento.getMatch_name() != null && !evento.getMatch_name().isEmpty() ? evento.getMatch_name() : evento.getVideogame_name() + " - " + evento.getTournament_name();
+            String matchName = evento.getMatch_name() != null && !evento.getMatch_name().isEmpty() ? 
+                evento.getMatch_name() : (evento.getVideogame_name() != null ? evento.getVideogame_name() : "Evento") + 
+                " - " + (evento.getTournament_name() != null ? evento.getTournament_name() : "");
             matchNameTV.setText(matchName);
 
             leagueNameTV.setText(evento.getLeague_name() != null ? evento.getLeague_name() : "Liga por determinar");
@@ -93,9 +97,11 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
             String teams = getTeamsText(evento);
             teamsTV.setText(teams);
 
-            suscribirBtn.setOnClickListener(v -> {
-                mostrarDialogoSuscripcion(evento, matchName);
-            });
+            if (suscribirBtn != null) {
+                suscribirBtn.setOnClickListener(v -> {
+                    mostrarDialogoSuscripcion(evento, matchName);
+                });
+            }
             
             if (notificarContainer != null) {
                 notificarContainer.setOnClickListener(v -> {
@@ -157,20 +163,35 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
             SharedPreferences prefs = itemView.getContext().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
             String accessToken = prefs.getString("accessToken", null);
             
-            ApiService apiServiceConToken = accessToken != null ? RetrofitClient.getApiService(accessToken) : RetrofitClient.getApiService();
+            if (accessToken == null) {
+                Toast.makeText(itemView.getContext(), "Debes iniciar sesión para suscribirte", Toast.LENGTH_SHORT).show();
+                return;
+            }
             
-            ApiService.SuscripcionRequest suscripcionRequest = new ApiService.SuscripcionRequest(
-                evento.getExternal_id(), recordatorio1Dia, recordatorio1Hora);
+            ApiService apiServiceConToken = RetrofitClient.getApiService(accessToken);
+
+            int eventoId = evento.getId(); 
+            ApiService.SuscripcionRequest request = new ApiService.SuscripcionRequest(eventoId, recordatorio1Dia, recordatorio1Hora);
             
-            apiServiceConToken.suscribirEvento(suscripcionRequest).enqueue(new Callback<ApiResponse>() {
+            Log.d(TAG, "Enviando datos de suscripción: evento_id=" + eventoId + ", 1_dia=" + recordatorio1Dia + ", 1_hora=" + recordatorio1Hora);
+
+            apiServiceConToken.suscribirEvento(request).enqueue(new Callback<ApiResponse>() {
                 @Override
                 public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        String mensaje = "Suscrito a: " + evento.getMatch_name();
-                        if (recordatorio1Dia) mensaje += "\n✓ Recordatorio 1 día antes";
-                        if (recordatorio1Hora) mensaje += "\n✓ Recordatorio 1 hora antes";
-                        Toast.makeText(itemView.getContext(), mensaje, Toast.LENGTH_LONG).show();
+                        String matchTitle = evento.getMatch_name() != null ? evento.getMatch_name() : "el evento";
+                        Toast.makeText(itemView.getContext(), "Suscrito a: " + matchTitle, Toast.LENGTH_SHORT).show();
+                        
+                        Map<String, String> notiData = new HashMap<>();
+                        notiData.put("titulo", "Nueva Suscripción");
+                        notiData.put("mensaje", "Te has suscrito a " + matchTitle);
+                        notiData.put("evento_nombre", matchTitle);
+                        apiServiceConToken.addNotification(notiData).enqueue(new Callback<ApiResponse>() {
+                            @Override public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {}
+                            @Override public void onFailure(Call<ApiResponse> call, Throwable t) {}
+                        });
                     } else {
+                        Log.e(TAG, "Error en suscripción: " + response.code());
                         Toast.makeText(itemView.getContext(), "Error al suscribirse", Toast.LENGTH_SHORT).show();
                     }
                 }

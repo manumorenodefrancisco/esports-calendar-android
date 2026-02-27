@@ -32,6 +32,9 @@ public interface ApiService {
     @GET("api/subscriptions/")
     Call<SubscriptionsResponse> getSubscriptions();
     
+    @POST("api/subscriptions/")
+    Call<ApiResponse> suscribirEvento(@Body SuscripcionRequest suscripcionRequest);
+    
     @GET("api/preferences/recommended/")
     Call<EventsResponse> getRecommendedEvents();
     
@@ -56,7 +59,6 @@ public interface ApiService {
             this.password = password;
         }
         
-        // Getters para Gson
         public String getEmail() { return email; }
         public String getPassword() { return password; }
     }
@@ -72,7 +74,6 @@ public interface ApiService {
             this.password2 = password2;
         }
         
-        // Getters para Gson
         public String getEmail() { return email; }
         public String getPassword1() { return password1; }
         public String getPassword2() { return password2; }
@@ -129,37 +130,37 @@ public interface ApiService {
         public String getDescripcion() { return descripcion; }
         public String getFecha_hora() { return fecha_hora; }
     }
-    
+
     public static class SuscripcionRequest {
         private int evento_id;
+        private int evento;
         private boolean recordatorio_1_dia;
         private boolean recordatorio_1_hora;
         
-        public SuscripcionRequest(int evento_id, boolean recordatorio_1_dia, boolean recordatorio_1_hora) {
-            this.evento_id = evento_id;
-            this.recordatorio_1_dia = recordatorio_1_dia;
-            this.recordatorio_1_hora = recordatorio_1_hora;
+        public SuscripcionRequest(int id, boolean d, boolean h) {
+            this.evento_id = id;
+            this.evento = id;
+            this.recordatorio_1_dia = d;
+            this.recordatorio_1_hora = h;
         }
         
         public int getEvento_id() { return evento_id; }
+        public int getEvento() { return evento; }
         public boolean isRecordatorio_1_dia() { return recordatorio_1_dia; }
         public boolean isRecordatorio_1_hora() { return recordatorio_1_hora; }
     }
     
     // API endpoints
-    @POST("/api/notifications/register-token/")
+    @POST("api/notifications/register-token/")
     Call<ApiResponse> registerNotificationToken(@Body TokenRequest tokenRequest);
     
-    @POST("/api/notifications/send/{user_id}/")
+    @POST("api/notifications/send/{user_id}/")
     Call<ApiResponse> sendNotificationToUser(@Path("user_id") int userId, @Body Map<String, String> notification);
     
-    @POST("/api/suscripciones/suscribir/")
-    Call<ApiResponse> suscribirEvento(@Body SuscripcionRequest suscripcionRequest);
-    
-    @GET("/api/notifications/")
+    @GET("api/notifications/")
     Call<NotificacionesResponse> getNotificaciones();
     
-    @POST("/api/notifications/add")
+    @POST("api/notifications/add/")
     Call<ApiResponse> addNotification(@Body Map<String, String> notificationData);
     
     public static class PerfilRequest {
@@ -177,7 +178,6 @@ public interface ApiService {
             this.country = country;
         }
         
-        // Getters
         public String getEmail() { return email; }
         public String getUsername() { return username; }
         public String getBirthday() { return birthday; }
@@ -185,7 +185,7 @@ public interface ApiService {
         public String getCountry() { return country; }
     }
     
-    @POST("/api/perfil/actualizar")
+    @POST("api/perfil/actualizar/")
     Call<ApiResponse> actualizarPerfil(@Body PerfilRequest perfilRequest);
     
     public static class NotificacionesResponse {

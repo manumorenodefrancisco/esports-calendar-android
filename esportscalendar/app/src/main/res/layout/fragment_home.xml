@@ -17,7 +17,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Header -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -55,7 +54,6 @@
                     android:scaleType="centerCrop" />
             </RelativeLayout>
 
-            <!-- Calendar Section -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -130,17 +128,6 @@
 
                 </FrameLayout>
 
-                <!--<TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="8dp"
-                    android:text="Buscar Eventos"
-                    android:textColor="@android:color/black"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />-->
-
-                <!-- Search -->
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
@@ -172,7 +159,6 @@
                 </RelativeLayout>
             </LinearLayout>
 
-            <!-- Matches Section -->
             <LinearLayout
                 android:id="@+id/dayContent"
                 android:layout_width="match_parent"
