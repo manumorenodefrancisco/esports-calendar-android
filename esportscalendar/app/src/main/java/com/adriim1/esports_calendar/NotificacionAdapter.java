@@ -56,7 +56,6 @@ public class NotificacionAdapter extends RecyclerView.Adapter<NotificacionAdapte
             mensajeTV.setText(notificacion.getMensaje());
             eventoTV.setText(notificacion.getEvento_nombre());
             
-            // Formatear hora
             if (notificacion.getCreated_at() != null) {
                 try {
                     SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
@@ -66,8 +65,7 @@ public class NotificacionAdapter extends RecyclerView.Adapter<NotificacionAdapte
                     horaTV.setText("--:--");
                 }
             }
-            
-            // Marcar como leída o no leída
+
             if (notificacion.isLeida()) {
                 tituloTV.setAlpha(0.5f);
                 mensajeTV.setAlpha(0.5f);

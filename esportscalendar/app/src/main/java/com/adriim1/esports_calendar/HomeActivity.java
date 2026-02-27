@@ -13,8 +13,7 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
 
         Button btnLogin = findViewById(R.id.btn_iniciar_sesion);
-        Button btnRegister = findViewById(R.id.btn_registrarse);
-        Button btnContact = findViewById(R.id.btn_contacto);
+        Button btnRegister = findViewById(R.id.btn_registrarse);        Button btnContact = findViewById(R.id.btn_contacto);
 
         btnLogin.setOnClickListener(v -> {
             Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
