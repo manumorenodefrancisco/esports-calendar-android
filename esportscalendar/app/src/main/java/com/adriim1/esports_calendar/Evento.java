@@ -3,6 +3,7 @@ package com.adriim1.esports_calendar;
 import java.util.List;
 
 public class Evento {
+    private int id;
     private int external_id;
     private String scheduled_at;
     private String match_name;
@@ -22,6 +23,14 @@ public class Evento {
     private String updated_at;
 
     public Evento() {}
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getMatch_name() {
         return match_name;
