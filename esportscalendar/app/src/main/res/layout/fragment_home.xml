@@ -89,17 +89,30 @@
                         style="@style/Widget.MaterialComponents.Button.TextButton"
                         android:text="Hoy"
                         android:textSize="12sp"
-                        android:textColor="#0D1B6D"/>
+                        android:textColor="#0637D3"/>
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_nueva_anotacion"
+                    <androidx.cardview.widget.CardView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        android:backgroundTint="#0D1B6D"
-                        android:text="+ Nuevo"
-                        android:textAllCaps="false"
-                        app:cornerRadius="20dp" />
+                        app:cardCornerRadius="22dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="#BFDBDB8D">
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/btn_nueva_anotacion"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:paddingTop="6dp"
+                            android:paddingBottom="6dp"
+                            android:text="+ Nota"
+                            android:textAllCaps="false"
+                            android:textColor="@android:color/white" />
+
+                    </androidx.cardview.widget.CardView>
                 </RelativeLayout>
 
                 <FrameLayout
@@ -178,6 +191,30 @@
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recycler_view_matches"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="true" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/anotacionesLL"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="20dp"
+                android:visibility="gone">
+                
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:text="Anotaciones del día"
+                    android:textColor="@android:color/black"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recycler_view_anotaciones"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="true" />

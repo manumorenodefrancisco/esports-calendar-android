@@ -11,6 +11,8 @@ import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,17 +25,21 @@ import retrofit2.Response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class HomeFragment extends Fragment {
 
     private static final String TAG = "HomeFragment";
     private int currentYear, currentMonth, currentDay;
     private RecyclerView matchesRecyclerView;
+    private RecyclerView anotacionesRecyclerView;
+    private RecyclerView recomendadosRecyclerView;
     private EventoAdapter matchAdapter;
+    private AnotacionAdapter anotacionAdapter;
+    private EventoAdapter recomendadosAdapter;
     private List<Evento> allMatches;
     private ApiService apiService;
-    private RecyclerView recomendadosRecyclerView;
-    private EventoAdapter recomendadosAdapter;
+    private LinearLayout anotacionesLL;
 
     @Nullable
     @Override
@@ -50,6 +56,10 @@ public class HomeFragment extends Fragment {
         matchesRecyclerView = view.findViewById(R.id.recycler_view_matches);
         matchesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         
+        anotacionesRecyclerView = view.findViewById(R.id.recycler_view_anotaciones);
+        anotacionesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        anotacionesLL = view.findViewById(R.id.anotacionesLL);
+        
         recomendadosRecyclerView = view.findViewById(R.id.rv_matches_recomendados);
         recomendadosRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         
@@ -58,17 +68,25 @@ public class HomeFragment extends Fragment {
         matchAdapter = new EventoAdapter(new ArrayList<>());
         matchesRecyclerView.setAdapter(matchAdapter);
         
+        anotacionAdapter = new AnotacionAdapter(new ArrayList<>());
+        anotacionesRecyclerView.setAdapter(anotacionAdapter);
+        
         recomendadosAdapter = new EventoAdapter(new ArrayList<>(), true);
         recomendadosRecyclerView.setAdapter(recomendadosAdapter);
 
         loadAllMatches();
+        
+        obtenerTokenFCM();
 
         calendarView.setOnDateChangeListener((@NonNull CalendarView cv, int year, int month, int dayOfMonth) -> {
             currentYear = year;
             currentMonth = month;
             currentDay = dayOfMonth;
             loadMatchesForDate(year, month, dayOfMonth);
+            loadAnotacionesForDate(year, month, dayOfMonth);
         });
+        
+        loadAnotacionesForDate(currentYear, currentMonth, currentDay);
 
         todayButton.setOnClickListener(v -> calendarView.setDate(System.currentTimeMillis()));
         
@@ -221,36 +239,138 @@ public class HomeFragment extends Fragment {
         String token = prefs.getString("accessToken", null);
         
         if (token == null) {
-            android.widget.Toast.makeText(getContext(), "Debes iniciar sesión", android.widget.Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Debes iniciar sesión", Toast.LENGTH_SHORT).show();
             return;
         }
         
-        String fecha = String.format(Locale.getDefault(), "%04d-%02d-%02dT10:00:00", currentYear, currentMonth + 1, currentDay);
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getContext());
+        builder.setTitle("Nueva Anotación");
         
-        ApiService.AnotacionRequest request = new ApiService.AnotacionRequest(
-            "Mi anotación", 
-            "Descripción de la anotación", 
-            fecha
-        );
+        android.view.View dialogView = getLayoutInflater().inflate(R.layout.dialog_anotacion, null);
+        builder.setView(dialogView);
+        
+        android.widget.EditText tituloEditText = dialogView.findViewById(R.id.edit_text_titulo);
+        android.widget.EditText descripcionEditText = dialogView.findViewById(R.id.edit_text_descripcion);
+        
+        builder.setPositiveButton("Guardar", (dialog, which) -> {
+            String titulo = tituloEditText.getText().toString().trim();
+            String descripcion = descripcionEditText.getText().toString().trim();
+            
+            if (titulo.isEmpty()) {
+                Toast.makeText(getContext(), "El título es obligatorio", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            String fecha = String.format(Locale.getDefault(), "%04d-%02d-%02dT10:00:00", currentYear, currentMonth + 1, currentDay);
+            
+            ApiService.AnotacionRequest request = new ApiService.AnotacionRequest(titulo, descripcion, fecha);
+            
+            ApiService apiServiceConToken = RetrofitClient.getApiService(token);
+            apiServiceConToken.createAnotacion(request).enqueue(new Callback<ApiResponse>() {
+                @Override
+                public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        if (response.body().isSuccess()) {
+                            Toast.makeText(getContext(), "Anotación creada", Toast.LENGTH_SHORT).show();
+                            loadAnotacionesForDate(currentYear, currentMonth, currentDay);
+                        } else {
+                            Toast.makeText(getContext(), "Error al crear anotación", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(getContext(), "Error en el servidor", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                
+                @Override
+                public void onFailure(Call<ApiResponse> call, Throwable t) {
+                    Toast.makeText(getContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+        
+        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
+        
+        builder.show();
+    }
+    
+    private void loadAnotacionesForDate(int year, int month, int day) {
+        SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
+        String token = prefs.getString("accessToken", null);
+        
+        if (token == null) {
+            anotacionesLL.setVisibility(View.GONE);
+            return;
+        }
+        
+        String fecha = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, day);
         
         ApiService apiServiceConToken = RetrofitClient.getApiService(token);
-        apiServiceConToken.createAnotacion(request).enqueue(new Callback<ApiResponse>() {
+        apiServiceConToken.getAnotaciones(fecha).enqueue(new Callback<ApiService.AnotacionesResponse>() {
+            @Override
+            public void onResponse(Call<ApiService.AnotacionesResponse> call, Response<ApiService.AnotacionesResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    if (response.body().isSuccess()) {
+                        List<Anotacion> anotaciones = response.body().getData();
+                        
+                        if (anotaciones != null && !anotaciones.isEmpty()) {
+                            anotacionAdapter.getAnotacionList().clear();
+                            anotacionAdapter.getAnotacionList().addAll(anotaciones);
+                            anotacionAdapter.notifyDataSetChanged();
+                            anotacionesLL.setVisibility(View.VISIBLE);
+                        } else {
+                            anotacionesLL.setVisibility(View.GONE);
+                        }
+                    } else {
+                        anotacionesLL.setVisibility(View.GONE);
+                    }
+                } else {
+                    anotacionesLL.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiService.AnotacionesResponse> call, Throwable t) {
+                anotacionesLL.setVisibility(View.GONE);
+            }
+        });
+    }
+    
+    private void obtenerTokenFCM() {
+        FirebaseMessaging.getInstance().getToken()
+            .addOnCompleteListener(task -> {
+                if (task.isSuccessful() && task.getResult() != null) {
+                    String token = task.getResult();
+                    Log.d(TAG, "Token FCM obtenido: " + token);
+                    
+                    // Enviar token al backend
+                    enviarTokenAlBackend(token);
+                } else {
+                    Log.w(TAG, "No se pudo obtener el token FCM");
+                }
+            });
+    }
+    
+    private void enviarTokenAlBackend(String token) {
+        SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
+        String accessToken = prefs.getString("accessToken", null);
+        
+        ApiService apiServiceConToken = accessToken != null ? RetrofitClient.getApiService(accessToken) : RetrofitClient.getApiService();
+        
+        ApiService.TokenRequest tokenRequest = new ApiService.TokenRequest(token);
+        
+        apiServiceConToken.registerNotificationToken(tokenRequest).enqueue(new Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    if (response.body().isSuccess()) {
-                        android.widget.Toast.makeText(getContext(), "Anotación creada", android.widget.Toast.LENGTH_SHORT).show();
-                    } else {
-                        android.widget.Toast.makeText(getContext(), "Error al crear anotación", android.widget.Toast.LENGTH_SHORT).show();
-                    }
+                    Log.d(TAG, "Token FCM registrado exitosamente");
                 } else {
-                    android.widget.Toast.makeText(getContext(), "Error en el servidor", android.widget.Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Error registrando token FCM: " + response.code());
                 }
             }
             
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
-                android.widget.Toast.makeText(getContext(), "Error de conexión", android.widget.Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Error de red registrando token FCM", t);
             }
         });
     }

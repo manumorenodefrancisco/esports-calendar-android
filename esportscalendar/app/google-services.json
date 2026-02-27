@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "687708237011",
+    "project_id": "e-calendar-70d6f",
+    "storage_bucket": "e-calendar-70d6f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:687708237011:android:0998c4549566bc99cbf826",
+        "android_client_info": {
+          "package_name": "com.adriim1.esports_calendar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdyFdexEHZghbg0j48r4VUN7rwilRhKxM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
