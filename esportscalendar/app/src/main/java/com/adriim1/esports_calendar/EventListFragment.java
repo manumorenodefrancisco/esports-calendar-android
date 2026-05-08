@@ -52,10 +52,12 @@ public class EventListFragment extends Fragment {
                     List<Suscripcion> suscripciones = response.body().getData();
                     eventList.clear();
                     
-                    for (Suscripcion sus : suscripciones) {
-                        Evento evento = sus.getEvento();
-                        if (evento != null) {
-                            eventList.add(evento);
+                    if (suscripciones != null) {
+                        for (Suscripcion sus : suscripciones) {
+                            Evento evento = sus.getEvento();
+                            if (evento != null) {
+                                eventList.add(evento);
+                            }
                         }
                     }
                     eventAdapterRV.notifyDataSetChanged();
@@ -69,7 +71,7 @@ public class EventListFragment extends Fragment {
     }
 
     private String getToken() {
-        SharedPreferences prefs = getContext().getSharedPreferences("prefs", Context.MODE_PRIVATE);
-        return prefs.getString("token", "");
+        SharedPreferences prefs = getContext().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
+        return prefs.getString("accessToken", "");
     }
 }

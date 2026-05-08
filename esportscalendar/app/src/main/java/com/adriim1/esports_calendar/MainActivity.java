@@ -37,13 +37,13 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onPageSelected(int position) {
-                navHome.setAlpha(0.5f);//semi-transparencia
+                navHome.setAlpha(0.5f);
                 navNotifications.setAlpha(0.5f);
                 navProfile.setAlpha(0.5f);
                 
                 switch (position) {
                     case 0:
-                        navHome.setAlpha(1.0f);//opacidad total
+                        navHome.setAlpha(1.0f);
                         break;
                     case 1:
                         navNotifications.setAlpha(1.0f);
