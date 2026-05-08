@@ -9,6 +9,7 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 import java.util.List;
 import java.util.Map;
+import com.google.gson.annotations.SerializedName;
 
 public interface ApiService {
     
@@ -131,8 +132,13 @@ public interface ApiService {
     }
     
     public static class SuscripcionRequest {
+        @SerializedName("evento_id")
         private int evento_id;
+        
+        @SerializedName("recordatorio_1_dia")
         private boolean recordatorio_1_dia;
+        
+        @SerializedName("recordatorio_1_hora")
         private boolean recordatorio_1_hora;
         
         public SuscripcionRequest(int evento_id, boolean recordatorio_1_dia, boolean recordatorio_1_hora) {
@@ -153,7 +159,7 @@ public interface ApiService {
     @POST("/api/notifications/send/{user_id}/")
     Call<ApiResponse> sendNotificationToUser(@Path("user_id") int userId, @Body Map<String, String> notification);
     
-    @POST("/api/suscripciones/suscribir/")
+    @POST("/api/subscriptions/")
     Call<ApiResponse> suscribirEvento(@Body SuscripcionRequest suscripcionRequest);
     
     @GET("/api/notifications/")

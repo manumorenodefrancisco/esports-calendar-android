@@ -22,15 +22,24 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
 
     private List<Evento> eventoList;
     private boolean useRecomendadoLayout;
+    private boolean mostrarBtnNotificar;
 
     public EventoAdapter(List<Evento> eventoList) {
         this.eventoList = eventoList;
         this.useRecomendadoLayout = false;
+        this.mostrarBtnNotificar = true;
     }
 
     public EventoAdapter(List<Evento> eventoList, boolean useRecomendadoLayout) {
         this.eventoList = eventoList;
         this.useRecomendadoLayout = useRecomendadoLayout;
+        this.mostrarBtnNotificar = true;
+    }
+
+    public EventoAdapter(List<Evento> eventoList, boolean useRecomendadoLayout, boolean mostrarBtnNotificar) {
+        this.eventoList = eventoList;
+        this.useRecomendadoLayout = useRecomendadoLayout;
+        this.mostrarBtnNotificar = mostrarBtnNotificar;
     }
 
     public List<Evento> getEventoList() {
@@ -93,14 +102,26 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
             String teams = getTeamsText(evento);
             teamsTV.setText(teams);
 
-            suscribirBtn.setOnClickListener(v -> {
-                mostrarDialogoSuscripcion(evento, matchName);
-            });
-            
+            if (!EventoAdapter.this.mostrarBtnNotificar) {
+                if (suscribirBtn != null) {
+                    suscribirBtn.setVisibility(View.GONE);
+                }
+                if (notificarContainer != null) {
+                    notificarContainer.setVisibility(View.GONE);
+                }
+                return;
+            }
+
+            if (suscribirBtn != null) {
+                suscribirBtn.setVisibility(View.VISIBLE);
+            }
             if (notificarContainer != null) {
-                notificarContainer.setOnClickListener(v -> {
-                    mostrarDialogoSuscripcion(evento, matchName);
-                });
+                notificarContainer.setVisibility(View.VISIBLE);
+            }
+
+            suscribirBtn.setOnClickListener(v -> mostrarDialogoSuscripcion(evento, matchName));
+            if (notificarContainer != null) {
+                notificarContainer.setOnClickListener(v -> mostrarDialogoSuscripcion(evento, matchName));
             }
         }
 
@@ -162,6 +183,9 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
             ApiService.SuscripcionRequest suscripcionRequest = new ApiService.SuscripcionRequest(
                 evento.getExternal_id(), recordatorio1Dia, recordatorio1Hora);
             
+            android.util.Log.d("SUSCRIPCION", "Enviando: evento_id=" + evento.getExternal_id() +
+                ", rec_1d=" + recordatorio1Dia + ", r_1h=" + recordatorio1Hora);
+            
             apiServiceConToken.suscribirEvento(suscripcionRequest).enqueue(new Callback<ApiResponse>() {
                 @Override
                 public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
@@ -171,6 +195,15 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
                         if (recordatorio1Hora) mensaje += "\n✓ Recordatorio 1 hora antes";
                         Toast.makeText(itemView.getContext(), mensaje, Toast.LENGTH_LONG).show();
                     } else {
+                        android.util.Log.e("SUSCRIPCION", "Error en respuesta: code=" + response.code());
+                        if (response.errorBody() != null) {
+                            try {
+                                String errorBody = response.errorBody().string();
+                                android.util.Log.e("SUSCRIPCION", "Error body: " + errorBody);
+                            } catch (Exception e) {
+                                android.util.Log.e("SUSCRIPCION", "No se pudo leer error body");
+                            }
+                        }
                         Toast.makeText(itemView.getContext(), "Error al suscribirse", Toast.LENGTH_SHORT).show();
                     }
                 }

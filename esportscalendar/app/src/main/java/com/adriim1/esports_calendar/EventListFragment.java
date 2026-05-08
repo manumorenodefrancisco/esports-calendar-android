@@ -34,7 +34,7 @@ public class EventListFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         eventList = new ArrayList<>();
-        eventAdapterRV = new EventoAdapter(eventList);
+        eventAdapterRV = new EventoAdapter(eventList, false, false);
         recyclerView.setAdapter(eventAdapterRV);
 
         apiService = RetrofitClient.getApiService(getToken());

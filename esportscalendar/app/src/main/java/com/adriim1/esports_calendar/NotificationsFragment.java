@@ -34,7 +34,7 @@ public class NotificationsFragment extends Fragment {
         subscriptionsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         
         subscriptionEvents = new ArrayList<>();
-        subscriptionAdapter = new EventoAdapter(subscriptionEvents);
+        subscriptionAdapter = new EventoAdapter(subscriptionEvents, false, false);
         subscriptionsRecyclerView.setAdapter(subscriptionAdapter);
         loadSubscribedEvents();
 
