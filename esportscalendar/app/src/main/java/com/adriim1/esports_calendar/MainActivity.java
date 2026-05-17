@@ -1,146 +1,85 @@
 package com.adriim1.esports_calendar;
 
+import android.os.Bundle;
+import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.CalendarView;
-import android.widget.EditText;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.List;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "MainActivity";
-    private int currentYear, currentMonth, currentDay;
-    private int index = 0;
-    private List<String> calendarStrings;
-    private int[] days;
-    private int[] months;
-    private int[] years;
+    private ViewPager viewPager;
+    private ImageView navHome, navNotifications, navProfile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final CalendarView calendarView = findViewById(R.id.calendarView);
-        final View dayContent = findViewById(R.id.dayContent);
-        final EditText textInput = findViewById(R.id.textInput);
-        final Button saveTextButton = findViewById(R.id.saveTextButton);
-        final Button todayButton = findViewById(R.id.todayButton);
+        viewPager = findViewById(R.id.viewPager);
+        navHome = findViewById(R.id.nav_home);
+        navNotifications = findViewById(R.id.nav_notifications);
+        navProfile = findViewById(R.id.nav_profile);
 
-        int numDays = 2000;
-        calendarStrings = new ArrayList<>();
-        days = new int[numDays];
-        months = new int[numDays];
-        years = new int[numDays];
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(adapter);
 
-        readInfo();
+        navHome.setOnClickListener(v -> viewPager.setCurrentItem(0));
+        navNotifications.setOnClickListener(v -> viewPager.setCurrentItem(1));
+        navProfile.setOnClickListener(v -> viewPager.setCurrentItem(2));
 
-        calendarView.setOnDateChangeListener((@NonNull CalendarView view, int year, int month, int dayOfMonth) -> {
-            currentYear = year;
-            currentMonth = month;
-            currentDay = dayOfMonth;
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
 
-            if (dayContent.getVisibility() == View.GONE) {
-                dayContent.setVisibility(View.VISIBLE);
-            }
-
-            boolean found = false;
-            for (int i = 0; i < index; i++) {
-                if (days[i] == currentDay && months[i] == currentMonth && years[i] == currentYear) {
-                    textInput.setText(calendarStrings.get(i));
-                    found = true;
-                    break;
+            @Override
+            public void onPageSelected(int position) {
+                navHome.setAlpha(0.5f);
+                navNotifications.setAlpha(0.5f);
+                navProfile.setAlpha(0.5f);
+                
+                switch (position) {
+                    case 0:
+                        navHome.setAlpha(1.0f);
+                        break;
+                    case 1:
+                        navNotifications.setAlpha(1.0f);
+                        break;
+                    case 2:
+                        navProfile.setAlpha(1.0f);
+                        break;
                 }
             }
 
-            if (!found) {
-                textInput.setText("");
-            }
+            @Override
+            public void onPageScrollStateChanged(int state) {}
         });
 
-        saveTextButton.setOnClickListener(v -> {
-            if (index < days.length) {
-                days[index] = currentDay;
-                months[index] = currentMonth;
-                years[index] = currentYear;
-                calendarStrings.add(index, textInput.getText().toString());
-                index++;
-                textInput.setText("");
-                dayContent.setVisibility(View.GONE);
-            }
-        });
-
-        todayButton.setOnClickListener(v -> calendarView.setDate(System.currentTimeMillis()));
+        navHome.setAlpha(1.0f);
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        saveInfo();
-    }
-
-    private void saveInfo() {
-        try {
-            File file = new File(getFilesDir(), "saved");
-            File daysFile = new File(getFilesDir(), "days");
-            File monthsFile = new File(getFilesDir(), "months");
-            File yearsFile = new File(getFilesDir(), "years");
-
-            try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
-                 BufferedWriter bwDays = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(daysFile)));
-                 BufferedWriter bwMonths = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(monthsFile)));
-                 BufferedWriter bwYears = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(yearsFile)))) {
-
-                for (int i = 0; i < index; i++) {
-                    bw.write(calendarStrings.get(i));
-                    bw.newLine();
-                    bwDays.write(days[i]);
-                    bwMonths.write(months[i]);
-                    bwYears.write(years[i]);
-                }
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error saving info", e);
+    private static class ViewPagerAdapter extends FragmentPagerAdapter {
+        public ViewPagerAdapter(@NonNull FragmentManager fragmentManager) {
+            super(fragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         }
-    }
 
-    private void readInfo() {
-        File file = new File(getFilesDir(), "saved");
-        File daysFile = new File(getFilesDir(), "days");
-        File monthsFile = new File(getFilesDir(), "months");
-        File yearsFile = new File(getFilesDir(), "years");
-
-        if (!file.exists()) return;
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-             BufferedReader readerDays = new BufferedReader(new InputStreamReader(new FileInputStream(daysFile)));
-             BufferedReader readerMonths = new BufferedReader(new InputStreamReader(new FileInputStream(monthsFile)));
-             BufferedReader readerYears = new BufferedReader(new InputStreamReader(new FileInputStream(yearsFile)))) {
-
-            String line;
-            int i = 0;
-            while ((line = reader.readLine()) != null && i < days.length) {
-                calendarStrings.add(line);
-                days[i] = readerDays.read();
-                months[i] = readerMonths.read();
-                years[i] = readerYears.read();
-                i++;
+        @NonNull
+        @Override
+        public Fragment getItem(int position) {
+            switch (position) {
+                case 0: return new HomeFragment();
+                case 1: return new NotificationsFragment();
+                case 2: return new PerfilFragment();
+                default: return new HomeFragment();
             }
-            index = i;
-        } catch (Exception e) {
-            Log.e(TAG, "Error reading info", e);
+        }
+
+        @Override
+        public int getCount() {
+            return 3;
         }
     }
 }

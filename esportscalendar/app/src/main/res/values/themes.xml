@@ -1,10 +1,33 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+    <color name="calendar_blue">#0997B1</color>
+    <color name="calendar_blue_transparent">#1976D200</color>
+    <color name="calendar_blue_selected">#0997B1</color>
+    
     <style name="Theme.Esportscalendar" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="android:windowFullscreen">true</item>
-        <item name="windowNoTitle">true</item>
+        <item name="android:statusBarColor">#000000</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="colorPrimary">@color/calendar_blue</item>
+        <item name="colorPrimaryDark">@color/calendar_blue</item>
+        <item name="colorAccent">@color/calendar_blue</item>
     </style>
-
     <style name="CircleImage" parent="">
         <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="CustomCalendar" parent="android:Widget.CalendarView">
+        <item name="android:selectedWeekBackgroundColor">@color/calendar_blue_selected</item>
+        <item name="android:focusedMonthDateColor">@color/calendar_blue</item>
+        <item name="android:unfocusedMonthDateColor">#757575</item>
+        <item name="android:weekSeparatorLineColor">@color/calendar_blue_transparent</item>
+        <item name="android:weekDayTextAppearance">@style/WeekDayText</item>
+        <item name="android:weekNumberColor">@color/calendar_blue</item>
+        <item name="android:selectedDateVerticalBar">@color/calendar_blue_selected</item>
+        <item name="colorPrimary">@color/calendar_blue</item>
+        <item name="colorAccent">@color/calendar_blue</item>
+    </style>
+    <style name="WeekDayText" parent="android:TextAppearance.Small">
+        <item name="android:textColor">@color/calendar_blue</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">14sp</item>
     </style>
 </resources>
