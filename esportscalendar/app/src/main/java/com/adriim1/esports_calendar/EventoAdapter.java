@@ -2,7 +2,10 @@ package com.adriim1.esports_calendar;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +15,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -48,6 +54,11 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
         return eventoList;
     }
 
+    public void setEventoList(List<Evento> newList) {
+        this.eventoList = newList;
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public EventoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -64,7 +75,7 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
 
     @Override
     public int getItemCount() {
-        return eventoList.size();
+        return eventoList != null ? eventoList.size() : 0;
     }
 
     class EventoViewHolder extends RecyclerView.ViewHolder {
@@ -106,33 +117,23 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
             String teams = getTeamsText(evento);
             teamsTV.setText(teams);
 
+            itemView.setOnClickListener(v -> mostrarDetalleEvento(evento));
+
             if (!EventoAdapter.this.mostrarBtnNotificar) {
-                if (suscribirBtn != null) {
-                    suscribirBtn.setVisibility(View.GONE);
-                }
-                if (notificarContainer != null) {
-                    notificarContainer.setVisibility(View.GONE);
-                }
-                return;
-            }
-
-            if (suscribirBtn != null) {
-                suscribirBtn.setVisibility(View.VISIBLE);
-            }
-            if (notificarContainer != null) {
-                notificarContainer.setVisibility(View.VISIBLE);
-            }
-
-            suscribirBtn.setOnClickListener(v -> mostrarDialogoSuscripcion(evento, matchName));
-            if (notificarContainer != null) {
-                notificarContainer.setOnClickListener(v -> mostrarDialogoSuscripcion(evento, matchName));
+                if (suscribirBtn != null) suscribirBtn.setVisibility(View.GONE);
+                if (notificarContainer != null) notificarContainer.setVisibility(View.GONE);
+            } else {
+                if (suscribirBtn != null) suscribirBtn.setVisibility(View.VISIBLE);
+                if (notificarContainer != null) notificarContainer.setVisibility(View.VISIBLE);
+                
+                View.OnClickListener subscribeClick = v -> mostrarDialogoSuscripcion(evento, matchName);
+                if (suscribirBtn != null) suscribirBtn.setOnClickListener(subscribeClick);
+                if (notificarContainer != null) notificarContainer.setOnClickListener(subscribeClick);
             }
         }
 
         private String getStatusText(String status) {
-            if (status == null) {
-                return "SIN ESTADO";
-            }
+            if (status == null) return "SIN ESTADO";
             switch (status) {
                 case "running": return "EN VIVO";
                 case "finished": return "FINALIZADO";
@@ -151,29 +152,140 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
             }
             return "Equipos por determinar";
         }
+
+        private void mostrarDetalleEvento(Evento evento) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(itemView.getContext());
+            View dialogView = LayoutInflater.from(itemView.getContext()).inflate(R.layout.dialog_match_detail, null);
+            builder.setView(dialogView);
+
+            TextView leagueTV = dialogView.findViewById(R.id.detail_league_name);
+            TextView serieTV = dialogView.findViewById(R.id.detail_serie_name);
+            TextView tournamentTV = dialogView.findViewById(R.id.detail_tournament_name);
+            TextView matchNameTV = dialogView.findViewById(R.id.detail_match_name);
+            TextView dateTV = dialogView.findViewById(R.id.detail_date);
+            TextView timeTV = dialogView.findViewById(R.id.detail_time);
+            TextView team1NameTV = dialogView.findViewById(R.id.detail_team1_name);
+            TextView team2NameTV = dialogView.findViewById(R.id.detail_team2_name);
+            ImageView team1LogoIV = dialogView.findViewById(R.id.detail_team1_logo);
+            ImageView team2LogoIV = dialogView.findViewById(R.id.detail_team2_logo);
+            TextView team1ScoreTV = dialogView.findViewById(R.id.detail_team1_score);
+            TextView team2ScoreTV = dialogView.findViewById(R.id.detail_team2_score);
+            TextView matchTypeTV = dialogView.findViewById(R.id.detail_match_type);
+            TextView statusTextTV = dialogView.findViewById(R.id.detail_status);
+            View indicatorDot = dialogView.findViewById(R.id.indicator_dot);
+            TextView streamUrlTV = dialogView.findViewById(R.id.detail_stream_url);
+            TextView endAtTV = dialogView.findViewById(R.id.detail_end_at);
+            View streamContainer = dialogView.findViewById(R.id.stream_container);
+
+            leagueTV.setText(evento.getLeague_name() != null ? evento.getLeague_name() : "");
+            serieTV.setText(evento.getSerie_full_name() != null ? evento.getSerie_full_name() : "");
+            tournamentTV.setText(evento.getTournament_name() != null ? evento.getTournament_name() : "");
+            matchNameTV.setText(evento.getMatch_name() != null ? evento.getMatch_name() : "");
+
+            if (evento.getScheduled_at() != null && evento.getScheduled_at().length() >= 16) {
+                String fullDate = evento.getScheduled_at();
+                String dateStr = fullDate.substring(8, 10) + "/" + fullDate.substring(5, 7);
+                String timeStr = fullDate.substring(11, 16);
+                dateTV.setText(dateStr);
+                timeTV.setText(timeStr);
+            }
+
+            if (evento.getOpponents() != null && evento.getOpponents().size() >= 2) {
+                Evento.Opponent t1 = evento.getOpponents().get(0);
+                Evento.Opponent t2 = evento.getOpponents().get(1);
+                team1NameTV.setText(t1.getName());
+                team2NameTV.setText(t2.getName());
+                Glide.with(itemView.getContext()).load(t1.getImage_url()).placeholder(R.drawable.ic_launcher_foreground).into(team1LogoIV);
+                Glide.with(itemView.getContext()).load(t2.getImage_url()).placeholder(R.drawable.ic_launcher_foreground).into(team2LogoIV);
+            }
+
+            String mType = (evento.getMatch_type() != null ? evento.getMatch_type().toUpperCase() : "BO") + 
+                           (evento.getNumber_of_games() != null ? evento.getNumber_of_games() : "");
+            matchTypeTV.setText(mType);
+
+            String status = evento.getStatus();
+            if ("running".equals(status)) {
+                statusTextTV.setText("LIVE");
+                statusTextTV.setTextColor(Color.parseColor("#FF5252"));
+                indicatorDot.setVisibility(View.VISIBLE);
+                indicatorDot.setBackgroundResource(R.drawable.button_gradient_red);
+                setScores(evento, team1ScoreTV, team2ScoreTV);
+                setStream(evento, streamUrlTV, streamContainer);
+            } else if ("finished".equals(status)) {
+                statusTextTV.setText("FINALIZADO");
+                statusTextTV.setTextColor(Color.GRAY);
+                indicatorDot.setVisibility(View.GONE);
+                setScores(evento, team1ScoreTV, team2ScoreTV);
+                highlightWinner(evento, team1NameTV, team2NameTV);
+                if (evento.getEnd_at() != null) {
+                    endAtTV.setVisibility(View.VISIBLE);
+                    String end = evento.getEnd_at().length() >= 16 ? "Finalizado a las " + evento.getEnd_at().substring(11, 16) : "Finalizado";
+                    endAtTV.setText(end);
+                }
+                streamContainer.setVisibility(View.GONE);
+            } else {
+                statusTextTV.setText("PRÓXIMAMENTE");
+                statusTextTV.setTextColor(Color.parseColor("#0997B1"));
+                indicatorDot.setVisibility(View.GONE);
+                team1ScoreTV.setText("0");
+                team2ScoreTV.setText("0");
+                setStream(evento, streamUrlTV, streamContainer);
+            }
+            builder.show();
+        }
+
+        private void setScores(Evento evento, TextView s1, TextView s2) {
+            if (evento.getResults() != null && evento.getResults().size() >= 2) {
+                s1.setText(String.valueOf(evento.getResults().get(0).getScore()));
+                s2.setText(String.valueOf(evento.getResults().get(1).getScore()));
+            } else {
+                s1.setText("0");
+                s2.setText("0");
+            }
+        }
+
+        private void highlightWinner(Evento evento, TextView n1, TextView n2) {
+            if (evento.getWinner_id() != null && evento.getOpponents() != null && evento.getOpponents().size() >= 2) {
+                if (evento.getWinner_id().equals(evento.getOpponents().get(0).getId())) {
+                    n1.setTextColor(Color.parseColor("#4CAF50"));
+                } else if (evento.getWinner_id().equals(evento.getOpponents().get(1).getId())) {
+                    n2.setTextColor(Color.parseColor("#4CAF50"));
+                }
+            }
+        }
+
+        private void setStream(Evento evento, TextView urlTV, View container) {
+            if (evento.getStreams() != null && !evento.getStreams().isEmpty()) {
+                String url = evento.getStreams().get(0);
+                urlTV.setText(url);
+                container.setVisibility(View.VISIBLE);
+                container.setOnClickListener(v -> {
+                    Intent i = new Intent(Intent.ACTION_VIEW);
+                    i.setData(Uri.parse(url));
+                    itemView.getContext().startActivity(i);
+                });
+            } else {
+                container.setVisibility(View.GONE);
+            }
+        }
         
         private void mostrarDialogoSuscripcion(Evento evento, String matchName) {
-            boolean[] checkedItems = {false, false}; // 1 día, 1 hora
+            boolean[] checkedItems = {false, false};
             String[] options = {"1 día antes", "1 hora antes"};
-            
             AlertDialog.Builder builder = new AlertDialog.Builder(itemView.getContext());
             builder.setTitle("Configurar notificaciones para: " + matchName);
             builder.setMultiChoiceItems(options, checkedItems, (dialog, which, isChecked) -> {
                 checkedItems[which] = isChecked;
             });
-            
             builder.setPositiveButton("Suscribir", (dialog, which) -> {
                 boolean recordatorio1Dia = checkedItems[0];
                 boolean recordatorio1Hora = checkedItems[1];
-                
                 if (!recordatorio1Dia && !recordatorio1Hora) {
                     Toast.makeText(itemView.getContext(), "Selecciona al menos una opción", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                
                 suscribirEvento(evento, recordatorio1Dia, recordatorio1Hora);
             });
-            
             builder.setNegativeButton("Cancelar", null);
             builder.show();
         }
@@ -181,26 +293,19 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
         private void suscribirEvento(Evento evento, boolean recordatorio1Dia, boolean recordatorio1Hora) {
             SharedPreferences prefs = itemView.getContext().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
             String accessToken = prefs.getString("accessToken", null);
-            
             if (accessToken == null) {
                 Toast.makeText(itemView.getContext(), "Debes iniciar sesión para suscribirte", Toast.LENGTH_SHORT).show();
                 return;
             }
-            
             ApiService apiServiceConToken = RetrofitClient.getApiService(accessToken);
-
             int eventoId = evento.getExternal_id();
             ApiService.SuscripcionRequest request = new ApiService.SuscripcionRequest(eventoId, recordatorio1Dia, recordatorio1Hora);
-
-            Log.d(TAG, "Enviando suscripción: evento_id=" + eventoId + ", 1_dia=" + recordatorio1Dia + ", 1_hora=" + recordatorio1Hora);
-
             apiServiceConToken.suscribirEvento(request).enqueue(new Callback<ApiResponse>() {
                 @Override
                 public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                         String matchTitle = evento.getMatch_name() != null ? evento.getMatch_name() : "el evento";
                         Toast.makeText(itemView.getContext(), "Suscrito a: " + matchTitle, Toast.LENGTH_SHORT).show();
-                        
                         Map<String, String> notiData = new HashMap<>();
                         notiData.put("titulo", "Nueva Suscripción");
                         notiData.put("mensaje", "Te has suscrito a " + matchTitle);
@@ -210,19 +315,9 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
                             @Override public void onFailure(Call<ApiResponse> call, Throwable t) {}
                         });
                     } else {
-                        Log.e(TAG, "Error en suscripción: code=" + response.code());
-                        if (response.errorBody() != null) {
-                            try {
-                                String errorBody = response.errorBody().string();
-                                Log.e(TAG, "Error body: " + errorBody);
-                            } catch (Exception e) {
-                                Log.e(TAG, "No se pudo leer error body");
-                            }
-                        }
                         Toast.makeText(itemView.getContext(), "Error al suscribirse", Toast.LENGTH_SHORT).show();
                     }
                 }
-                
                 @Override
                 public void onFailure(Call<ApiResponse> call, Throwable t) {
                     Toast.makeText(itemView.getContext(), "Error de red", Toast.LENGTH_SHORT).show();
