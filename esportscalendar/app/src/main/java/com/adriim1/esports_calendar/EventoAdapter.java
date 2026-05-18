@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -231,7 +232,12 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
                 team2ScoreTV.setText("0");
                 setStream(evento, streamUrlTV, streamContainer);
             }
-            builder.show();
+
+            AlertDialog dialog = builder.create();
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            }
+            dialog.show();
         }
 
         private void setScores(Evento evento, TextView s1, TextView s2) {

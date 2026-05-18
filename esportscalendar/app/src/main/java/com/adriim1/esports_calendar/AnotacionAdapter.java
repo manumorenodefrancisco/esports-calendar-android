@@ -93,9 +93,13 @@ public class AnotacionAdapter extends RecyclerView.Adapter<AnotacionAdapter.Anot
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                 if (response.isSuccessful()) {
-                    anotacionList.remove(position);
-                    notifyItemRemoved(position);
-                    Toast.makeText(contexto, "Anotación borrada", Toast.LENGTH_SHORT).show();
+                    // Volver a comprobar la posición para mayor seguridad
+                    int currentPos = position;
+                    if (currentPos < anotacionList.size()) {
+                        anotacionList.remove(currentPos);
+                        notifyItemRemoved(currentPos);
+                        Toast.makeText(contexto, "Anotación borrada", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
                     Toast.makeText(contexto, "Error borrando anotación", Toast.LENGTH_SHORT).show();
                 }
