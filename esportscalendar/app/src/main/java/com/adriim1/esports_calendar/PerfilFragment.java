@@ -139,14 +139,19 @@ public class PerfilFragment extends Fragment {
         
         // Sino escribe password, se envia null para que el Serializer no la cambie
         String finalPassword = (password != null && !password.isEmpty()) ? password : null;
+        
+        // Si los campos estan vacios, enviar null para que el Serializer no los cambie
+        String finalPhone = (phone != null && !phone.isEmpty()) ? phone : null;
+        String finalCountry = (country != null && !country.isEmpty()) ? country : null;
+        String finalBirthday = (birthday != null && !birthday.isEmpty()) ? birthday : null;
 
         ApiService.PerfilRequest req = new ApiService.PerfilRequest(
                 email,
                 username,
                 finalPassword,
-                birthday,
-                phone,
-                country
+                finalBirthday,
+                finalPhone,
+                finalCountry
         );
 
         api.actualizarPerfil(req).enqueue(new Callback<ApiResponse>() {
@@ -160,13 +165,18 @@ public class PerfilFragment extends Fragment {
                 } else {
                     String errorMsg = "Error al guardar";
                     if (response.body() != null && response.body().getErrors() != null) {
-                        errorMsg = "Error: " + String.join(", ", response.body().getErrors());
+                        String[] errors = response.body().getErrors();
+                        if (errors.length > 0) {
+                            errorMsg = String.join(", ", errors);
+                        }
                     } else if (response.code() == 404) {
-                        errorMsg = "Error: Endpoint no encontrado (404)";
+                        errorMsg = "Error: Perfil no encontrado (404)";
+                    } else if (response.code() == 400) {
+                        errorMsg = "Error: Datos inválidos";
                     } else {
                         errorMsg = "Error: Código " + response.code();
                     }
-                    Log.e(TAG, errorMsg);
+                    Log.e(TAG, "Error respuesta: " + response.code() + " - " + errorMsg);
                     Toast.makeText(ctx, errorMsg, Toast.LENGTH_LONG).show();
                 }
             }

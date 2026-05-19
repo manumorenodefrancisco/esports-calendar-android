@@ -112,6 +112,12 @@ public interface ApiService {
             this.email = email; this.username = username; this.password = password;
             this.birthday = birthday; this.phone = phone; this.country = country;
         }
+        public String getEmail() { return email; }
+        public String getUsername() { return username; }
+        public String getPassword() { return password; }
+        public String getBirthday() { return birthday; }
+        public String getPhone() { return phone; }
+        public String getCountry() { return country; }
     }
 
     public static class LoginRequest {
