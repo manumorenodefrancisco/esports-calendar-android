@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="6dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="#FFFFFF"
+    app:strokeColor="#E0E0E0"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/text_view_match_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="Match Name"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/text_view_suscripcion_tipo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1h, 5m"
+                android:textColor="#0997B1"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:layout_marginEnd="12dp" />
+
+            <ImageView
+                android:id="@+id/btn_eliminar_suscripcion"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_bin"
+                app:tint="#FF0000"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Eliminar" />
+        </LinearLayout>
+
+
+        <TextView
+            android:id="@+id/text_view_league_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="League Name"
+            android:textColor="#666666"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/text_view_teams"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Team A vs Team B"
+            android:textSize="14sp"
+            android:textColor="#333333"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/text_view_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="10:00"
+                android:textSize="12sp"
+                android:textColor="#555555"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/text_view_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="EN VIVO"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#FF5722"
+                android:background="#FFEBEE"
+                android:padding="4dp"
+                android:layout_marginStart="8dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

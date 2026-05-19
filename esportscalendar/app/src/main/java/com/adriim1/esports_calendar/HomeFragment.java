@@ -27,6 +27,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import okhttp3.ResponseBody;
 
 public class HomeFragment extends Fragment {
 
@@ -71,6 +74,13 @@ public class HomeFragment extends Fragment {
 
         recomendadosRecyclerView = view.findViewById(R.id.rv_matches_recomendados);
         recomendadosRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+
+        View btnReloadContainer = view.findViewById(R.id.btn_reload_recomendados_container);
+        ImageButton btnReload = view.findViewById(R.id.btn_reload_recomendados);
+
+        View.OnClickListener reloadAction = v -> generateAndLoadRecommendations();
+        if (btnReloadContainer != null) btnReloadContainer.setOnClickListener(reloadAction);
+        if (btnReload != null) btnReload.setOnClickListener(reloadAction);
 
         apiService = RetrofitClient.getApiService();
         allMatches = new ArrayList<>();
@@ -118,6 +128,60 @@ public class HomeFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void generateAndLoadRecommendations() {
+        SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
+        String token = prefs.getString("accessToken", null);
+
+        if (token == null) {
+            Toast.makeText(getContext(), "Inicia sesión para generar recomendaciones", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ApiService apiServiceConToken = RetrofitClient.getApiService(token);
+        Toast.makeText(getContext(), "Actualizando preferencias...", Toast.LENGTH_SHORT).show();
+
+        apiServiceConToken.generatePreferences().enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "Preferencias generadas con éxito, recargando lista...");
+                    // Segunda llamada: GET para refrescar los recomendados
+                    loadRecommendedMatches();
+                } else {
+                    try {
+                        String errorMsg = response.errorBody() != null ? response.errorBody().string() : "Error desconocido";
+                        Log.w(TAG, "No se pudieron generar preferencias: " + errorMsg);
+                        
+                        String displayMsg = "Error al actualizar preferencias";
+                        if (response.code() == 400) {
+                            try {
+                                JsonObject jsonObject = JsonParser.parseString(errorMsg).getAsJsonObject();
+                                if (jsonObject.has("error")) {
+                                    displayMsg = jsonObject.get("error").getAsString();
+                                } else {
+                                    displayMsg = errorMsg;
+                                }
+                            } catch (Exception e) {
+                                displayMsg = errorMsg;
+                            }
+                        }
+                        Toast.makeText(getContext(), displayMsg, Toast.LENGTH_LONG).show();
+                        
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error procesando errorBody", e);
+                        Toast.makeText(getContext(), "Error al actualizar preferencias", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e(TAG, "Error de red generando preferencias", t);
+                Toast.makeText(getContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void loadAllMatches() {

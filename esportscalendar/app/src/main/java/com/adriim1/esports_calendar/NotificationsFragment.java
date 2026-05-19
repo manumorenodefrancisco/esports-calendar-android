@@ -23,8 +23,8 @@ public class NotificationsFragment extends Fragment {
 
     private static final String TAG = "NotificationsFragment";
     private RecyclerView subscriptionsRecyclerView;
-    private EventoAdapter subscriptionAdapter;
-    private List<Evento> subscriptionEvents;
+    private SuscripcionAdapter subscriptionAdapter;
+    private List<Suscripcion> subscriptionEvents;
     private LinearLayout emptyStateLayout;
 
     @Nullable
@@ -38,7 +38,7 @@ public class NotificationsFragment extends Fragment {
         subscriptionsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         
         subscriptionEvents = new ArrayList<>();
-        subscriptionAdapter = new EventoAdapter(subscriptionEvents, false, false);
+        subscriptionAdapter = new SuscripcionAdapter(subscriptionEvents, getContext());
         subscriptionsRecyclerView.setAdapter(subscriptionAdapter);
 
         return view;
@@ -68,12 +68,7 @@ public class NotificationsFragment extends Fragment {
                     subscriptionEvents.clear();
                     
                     if (suscripciones != null) {
-                        for (Suscripcion sus : suscripciones) {
-                            Evento evento = sus.getEvento();
-                            if (evento != null) {
-                                subscriptionEvents.add(evento);
-                            }
-                        }
+                        subscriptionEvents.addAll(suscripciones);
                     }
                     
                     subscriptionAdapter.notifyDataSetChanged();

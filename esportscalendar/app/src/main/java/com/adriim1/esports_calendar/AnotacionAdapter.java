@@ -103,7 +103,7 @@ public class AnotacionAdapter extends RecyclerView.Adapter<AnotacionAdapter.Anot
         String token = prefs.getString("accessToken", null);
 
         ApiService api = token != null ? RetrofitClient.getApiService(token) : RetrofitClient.getApiService();
-        api.deleteAnotacionSimple(a.getId()).enqueue(new Callback<ApiResponse>() {
+        api.deleteAnotacion(a.getId()).enqueue(new Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
                 if (response.isSuccessful()) {

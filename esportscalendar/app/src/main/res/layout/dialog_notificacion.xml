@@ -54,7 +54,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1 día antes"
+                android:text="1 hora antes"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -62,13 +62,13 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Recibir alerta 24h antes"
+                android:text="Recibir alerta 1h antes"
                 android:textColor="#757575"
                 android:textSize="15sp" />
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/check_un_dia"
+            android:id="@+id/check_una_hora"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:buttonTint="#0D1B6D"
@@ -101,7 +101,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="1 hora antes"
+                android:text="Justo antes de comenzar"
                 android:textColor="#000000"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -109,13 +109,13 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Alerta justo 1h antes de empezar"
+                android:text="Alerta 5 minutos antes"
                 android:textColor="#757575"
                 android:textSize="15sp" />
         </LinearLayout>
 
         <CheckBox
-            android:id="@+id/check_una_hora"
+            android:id="@+id/check_cinco_minutos"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:buttonTint="#0D1B6D"

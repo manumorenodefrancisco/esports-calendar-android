@@ -11,6 +11,7 @@ import retrofit2.http.Query;
 import java.util.List;
 import java.util.Map;
 import com.google.gson.annotations.SerializedName;
+import okhttp3.ResponseBody;
 
 public interface ApiService {
     
@@ -37,8 +38,14 @@ public interface ApiService {
     @POST("api/subscriptions/")
     Call<ApiResponse> suscribirEvento(@Body SuscripcionRequest suscripcionRequest);
     
+    @DELETE("api/subscriptions/{evento_id}/")
+    Call<ApiResponse> eliminarSuscripcion(@Path("evento_id") int eventoId);
+    
     @GET("api/preferences/recommended/")
     Call<EventsResponse> getRecommendedEvents();
+
+    @POST("api/preferences/")
+    Call<ResponseBody> generatePreferences();
     
     @POST("api/anotaciones/")
     Call<ApiResponse> createAnotacion(@Body AnotacionRequest anotacionRequest);
@@ -48,9 +55,6 @@ public interface ApiService {
     
     @DELETE("api/anotaciones/{anotacion_id}/")
     Call<ApiResponse> deleteAnotacion(@Path("anotacion_id") int anotacionId);
-
-    @DELETE("api/anotaciones/")
-    Call<ApiResponse> deleteAnotacionSimple(@Query("id") int anotacionId);
 
     @GET("api/update-perfil/")
     Call<PerfilResponse> obtenerPerfil();
@@ -143,8 +147,8 @@ public interface ApiService {
 
     public static class SuscripcionRequest {
         @SerializedName("evento_id") private int evento_id;
-        @SerializedName("recordatorio_1_dia") private boolean recordatorio_1_dia;
         @SerializedName("recordatorio_1_hora") private boolean recordatorio_1_hora;
-        public SuscripcionRequest(int id, boolean d, boolean h) { this.evento_id = id; this.recordatorio_1_dia = d; this.recordatorio_1_hora = h; }
+        @SerializedName("recordatorio_5_minutos") private boolean recordatorio_5_minutos;
+        public SuscripcionRequest(int id, boolean h, boolean m) { this.evento_id = id; this.recordatorio_1_hora = h; this.recordatorio_5_minutos = m; }
     }
 }

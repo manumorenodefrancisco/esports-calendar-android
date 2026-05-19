@@ -59,14 +59,36 @@
 
                 <TextView
                     android:id="@+id/text_view_notificacion_evento"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:text="Evento relacionado"
                     android:textColor="#666666"
                     android:textSize="11sp"
                     android:layout_marginTop="2dp"
+                    android:layout_weight="1"
                     android:maxLines="1"
                     android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/text_view_suscripcion_tipo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1h, 5m"
+                    android:textColor="#0997B1"
+                    android:textSize="10sp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="8dp" />
+
+                <ImageView
+                    android:id="@+id/btn_eliminar_suscripcion"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@android:drawable/ic_menu_delete"
+                    app:tint="#FF0000"
+                    android:layout_marginStart="4dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true" />
 
             </LinearLayout>
 

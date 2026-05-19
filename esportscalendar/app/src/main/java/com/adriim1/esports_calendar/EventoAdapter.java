@@ -282,8 +282,8 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
             View dialogView = inflater.inflate(R.layout.dialog_notificacion, null);
 
             TextView tvPartidoNombre = dialogView.findViewById(R.id.tv_partido_nombre);
-            CheckBox checkUnDia = dialogView.findViewById(R.id.check_un_dia);
             CheckBox checkUnaHora = dialogView.findViewById(R.id.check_una_hora);
+            CheckBox checkCincoMinutos = dialogView.findViewById(R.id.check_cinco_minutos);
 
             if (tvPartidoNombre != null) {
                 tvPartidoNombre.setText(matchName);
@@ -293,15 +293,15 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
             builder.setView(dialogView);
 
             builder.setPositiveButton("Suscribir", (dialog, which) -> {
-                boolean recordatorio1Dia = checkUnDia.isChecked();
                 boolean recordatorio1Hora = checkUnaHora.isChecked();
+                boolean recordatorio5Minutos = checkCincoMinutos.isChecked();
 
-                if (!recordatorio1Dia && !recordatorio1Hora) {
+                if (!recordatorio1Hora && !recordatorio5Minutos) {
                     Toast.makeText(context, "Selecciona al menos una opción", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                suscribirEvento(evento, recordatorio1Dia, recordatorio1Hora);
+                suscribirEvento(evento, recordatorio1Hora, recordatorio5Minutos);
             });
 
             builder.setNegativeButton("Cancelar", null);
@@ -317,7 +317,7 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
             }
         }
 
-        private void suscribirEvento(Evento evento, boolean recordatorio1Dia, boolean recordatorio1Hora) {
+        private void suscribirEvento(Evento evento, boolean recordatorio1Hora, boolean recordatorio5Minutos) {
             SharedPreferences prefs = itemView.getContext().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
             String accessToken = prefs.getString("accessToken", null);
 
@@ -328,35 +328,64 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
 
             ApiService apiServiceConToken = RetrofitClient.getApiService(accessToken);
 
-            // Se usa el ID interno para la suscripción, como en la rama adri
             int eventoId = evento.getId();
-            ApiService.SuscripcionRequest request = new ApiService.SuscripcionRequest(eventoId, recordatorio1Dia, recordatorio1Hora);
-
-            Log.d(TAG, "Enviando datos de suscripción: evento_id=" + eventoId + ", 1_dia=" + recordatorio1Dia + ", 1_hora=" + recordatorio1Hora);
-
-            apiServiceConToken.suscribirEvento(request).enqueue(new Callback<ApiResponse>() {
+            
+            apiServiceConToken.getSubscriptions().enqueue(new Callback<ApiService.SubscriptionsResponse>() {
                 @Override
-                public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                public void onResponse(Call<ApiService.SubscriptionsResponse> call, Response<ApiService.SubscriptionsResponse> response) {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        String matchTitle = evento.getMatch_name() != null ? evento.getMatch_name() : "el evento";
-                        Toast.makeText(itemView.getContext(), "Suscrito a: " + matchTitle, Toast.LENGTH_SHORT).show();
+                        List<Suscripcion> suscripciones = response.body().getData();
+                        
+                        if (suscripciones != null) {
+                            for (Suscripcion sus : suscripciones) {
+                                if (sus.getEvento() != null && sus.getEvento().getId() == eventoId) {
+                                    String matchTitle = evento.getMatch_name() != null ? evento.getMatch_name() : "el evento";
+                                    Toast.makeText(itemView.getContext(), "Ya estás suscrito a: " + matchTitle, Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
+                            }
+                        }
+                        
+                        ApiService.SuscripcionRequest request = new ApiService.SuscripcionRequest(eventoId, recordatorio1Hora, recordatorio5Minutos);
+                        Log.d(TAG, "Enviando datos de suscripción: evento_id=" + eventoId + ", 1_hora=" + recordatorio1Hora + ", 5_min=" + recordatorio5Minutos);
 
-                        Map<String, String> notiData = new HashMap<>();
-                        notiData.put("titulo", "Nueva Suscripción");
-                        notiData.put("mensaje", "Te has suscrito a " + matchTitle);
-                        notiData.put("evento_nombre", matchTitle);
-                        apiServiceConToken.addNotification(notiData).enqueue(new Callback<ApiResponse>() {
-                            @Override public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {}
-                            @Override public void onFailure(Call<ApiResponse> call, Throwable t) {}
+                        apiServiceConToken.suscribirEvento(request).enqueue(new Callback<ApiResponse>() {
+                            @Override
+                            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                                    String matchTitle = evento.getMatch_name() != null ? evento.getMatch_name() : "el evento";
+                                    Toast.makeText(itemView.getContext(), "Suscrito a: " + matchTitle, Toast.LENGTH_SHORT).show();
+
+                                    Map<String, String> notiData = new HashMap<>();
+                                    notiData.put("titulo", "Nueva Suscripción");
+                                    notiData.put("mensaje", "Te has suscrito a " + matchTitle);
+                                    notiData.put("evento_nombre", matchTitle);
+                                    apiServiceConToken.addNotification(notiData).enqueue(new Callback<ApiResponse>() {
+                                        @Override public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {}
+                                        @Override public void onFailure(Call<ApiResponse> call, Throwable t) {}
+                                    });
+                                } else {
+                                    Toast.makeText(itemView.getContext(), "Error al suscribirse. Intenta de nuevo.", Toast.LENGTH_SHORT).show();
+                                    Log.e(TAG, "Error al suscribirse: código " + response.code());
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                                Toast.makeText(itemView.getContext(), "Error de red al suscribirse", Toast.LENGTH_SHORT).show();
+                                Log.e(TAG, "Error de red al suscribirse", t);
+                            }
                         });
                     } else {
-                        Toast.makeText(itemView.getContext(), "Error al suscribirse", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(itemView.getContext(), "Error al verificar suscripciones", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Error al obtener suscripciones: código " + response.code());
                     }
                 }
 
                 @Override
-                public void onFailure(Call<ApiResponse> call, Throwable t) {
-                    Toast.makeText(itemView.getContext(), "Error de red", Toast.LENGTH_SHORT).show();
+                public void onFailure(Call<ApiService.SubscriptionsResponse> call, Throwable t) {
+                    Toast.makeText(itemView.getContext(), "Error de red al verificar suscripciones", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Error de red al obtener suscripciones", t);
                 }
             });
         }
