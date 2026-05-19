@@ -2,9 +2,12 @@ package com.adriim1.esports_calendar;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Outline;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,9 +36,9 @@ public class AnotacionAdapter extends RecyclerView.Adapter<AnotacionAdapter.Anot
     @Override
     public void onBindViewHolder(@NonNull AnotacionViewHolder holder, int position) {
         Anotacion anotacion = anotacionList.get(position);
-        
+
         holder.tituloTV.setText(anotacion.getTitulo() != null ? anotacion.getTitulo() : "Sin título");
-        
+
         String descripcion = anotacion.getDescripcion();
         if (descripcion != null && !descripcion.trim().isEmpty()) {
             holder.descripcionTV.setText(descripcion);
@@ -43,15 +46,24 @@ public class AnotacionAdapter extends RecyclerView.Adapter<AnotacionAdapter.Anot
         } else {
             holder.descripcionTV.setVisibility(View.GONE);
         }
-        
+
         String hora = "Sin hora";
         if (anotacion.getFecha_hora() != null && anotacion.getFecha_hora().length() >= 16) {
             hora = anotacion.getFecha_hora().substring(11, 16);
         }
         holder.horaTV.setText(hora);
 
+        holder.containerBorrar.setOutlineProvider(new ViewOutlineProvider() {
+            @Override
+            public void getOutline(View view, Outline outline) {
+                outline.setOval(0, 0, view.getWidth(), view.getHeight());
+            }
+        });
+        holder.containerBorrar.setClipToOutline(true);
+
         Context contexto = holder.itemView.getContext();
-        holder.borrarBtn.setOnClickListener(v -> borrarAnotacion(contexto, holder.getAdapterPosition()));
+
+        holder.containerBorrar.setOnClickListener(v -> borrarAnotacion(contexto, holder.getAdapterPosition()));
     }
 
     @Override
@@ -68,6 +80,7 @@ public class AnotacionAdapter extends RecyclerView.Adapter<AnotacionAdapter.Anot
         TextView descripcionTV;
         TextView horaTV;
         ImageView borrarBtn;
+        FrameLayout containerBorrar;
 
         public AnotacionViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -75,6 +88,7 @@ public class AnotacionAdapter extends RecyclerView.Adapter<AnotacionAdapter.Anot
             descripcionTV = itemView.findViewById(R.id.text_view_anotacion_descripcion);
             horaTV = itemView.findViewById(R.id.text_view_anotacion_hora);
             borrarBtn = itemView.findViewById(R.id.btn_borrar_anotacion);
+            containerBorrar = itemView.findViewById(R.id.container_btn_borrar); // Enlazamos el contenedor
         }
     }
 
@@ -95,6 +109,7 @@ public class AnotacionAdapter extends RecyclerView.Adapter<AnotacionAdapter.Anot
                 if (response.isSuccessful()) {
                     anotacionList.remove(position);
                     notifyItemRemoved(position);
+                    notifyItemRangeChanged(position, anotacionList.size());
                     Toast.makeText(contexto, "Anotación borrada", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(contexto, "Error borrando anotación", Toast.LENGTH_SHORT).show();
