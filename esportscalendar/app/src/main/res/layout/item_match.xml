@@ -40,7 +40,7 @@
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:cardBackgroundColor="#0997B1"
+                app:cardBackgroundColor="#0D1B6D"
                 android:clickable="true"
                 android:focusable="true">
 

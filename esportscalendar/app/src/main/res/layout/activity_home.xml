@@ -5,14 +5,14 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center_horizontal"
-    android:background="@android:color/white"
+    android:background="@color/gris_claro_app"
     android:padding="30dp">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_logo"
         android:layout_width="280dp"
         android:layout_height="280dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="90dp"
         app:cardCornerRadius="45dp"
         app:cardElevation="0dp">
 
@@ -30,7 +30,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginTop="60dp">
+        android:layout_marginTop="80dp">
 
         <Button
             android:id="@+id/btn_iniciar_sesion"
