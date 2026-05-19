@@ -5,14 +5,14 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center_horizontal"
-    android:background="@android:color/white"
+    android:background="@color/gris_claro_app"
     android:padding="30dp">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_logo"
         android:layout_width="280dp"
         android:layout_height="280dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="90dp"
         app:cardCornerRadius="45dp"
         app:cardElevation="0dp">
 
@@ -30,7 +30,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_marginTop="40dp">
+        android:layout_marginTop="80dp">
 
         <Button
             android:id="@+id/btn_iniciar_sesion"
@@ -49,22 +49,27 @@
             android:layout_width="match_parent"
             android:layout_height="55dp"
             android:layout_marginBottom="15dp"
-            android:background="@drawable/button_gradient"
-            app:backgroundTint="@null"
+            android:background="@drawable/button_outline"
             android:text="Registrarse"
             android:textAllCaps="false"
             android:textSize="18sp"
-            android:textColor="@android:color/white" />
+            android:textStyle="bold"
+            android:textColor="#0D1B6D"/>
+
 
         <Button
             android:id="@+id/btn_contacto"
             android:layout_width="match_parent"
             android:layout_height="55dp"
-            android:backgroundTint="#757575"
-            android:text="Contacta con nosotros"
+            android:background="?android:attr/selectableItemBackground"
+            android:backgroundTint="@android:color/transparent"
+            android:text="¿Tienes dudas? Contacta con nosotros"
             android:textAllCaps="false"
-            android:textSize="18sp"
-            android:textColor="@android:color/white" />
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="#616161"/>
+
+
     </LinearLayout>
 
     <LinearLayout

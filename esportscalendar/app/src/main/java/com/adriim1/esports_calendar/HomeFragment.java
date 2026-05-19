@@ -12,6 +12,7 @@ import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -41,6 +42,12 @@ public class HomeFragment extends Fragment {
     private ApiService apiService;
     private LinearLayout anotacionesLL;
 
+    private TextView monthTitle;
+    private final String[] meses = {
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    };
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -52,49 +59,60 @@ public class HomeFragment extends Fragment {
         EditText searchEditText = view.findViewById(R.id.edit_text_search);
         ImageButton searchButton = view.findViewById(R.id.btn_search);
         Button btnNuevaAnotacion = view.findViewById(R.id.btn_nueva_anotacion);
-        
+
+        monthTitle = view.findViewById(R.id.monthTitle);
+
         matchesRecyclerView = view.findViewById(R.id.recycler_view_matches);
         matchesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        
+
         anotacionesRecyclerView = view.findViewById(R.id.recycler_view_anotaciones);
         anotacionesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         anotacionesLL = view.findViewById(R.id.anotacionesLL);
-        
+
         recomendadosRecyclerView = view.findViewById(R.id.rv_matches_recomendados);
         recomendadosRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        
+
         apiService = RetrofitClient.getApiService();
         allMatches = new ArrayList<>();
         matchAdapter = new EventoAdapter(new ArrayList<>());
         matchesRecyclerView.setAdapter(matchAdapter);
-        
+
         anotacionAdapter = new AnotacionAdapter(new ArrayList<>());
         anotacionesRecyclerView.setAdapter(anotacionAdapter);
-        
+
         recomendadosAdapter = new EventoAdapter(new ArrayList<>(), true);
         recomendadosRecyclerView.setAdapter(recomendadosAdapter);
 
         loadAllMatches();
-        
+
         obtenerTokenFCM();
 
         calendarView.setOnDateChangeListener((@NonNull CalendarView cv, int year, int month, int dayOfMonth) -> {
             currentYear = year;
             currentMonth = month;
             currentDay = dayOfMonth;
+
+            monthTitle.setText(meses[month] + " " + year);
+
             loadMatchesForDate(year, month, dayOfMonth);
             loadAnotacionesForDate(year, month, dayOfMonth);
         });
-        
+
         loadAnotacionesForDate(currentYear, currentMonth, currentDay);
 
-        todayButton.setOnClickListener(v -> calendarView.setDate(System.currentTimeMillis()));
-        
+        todayButton.setOnClickListener(v -> {
+            long ahora = System.currentTimeMillis();
+            calendarView.setDate(ahora);
+
+            java.util.Calendar calHoy = java.util.Calendar.getInstance();
+            monthTitle.setText(meses[calHoy.get(java.util.Calendar.MONTH)] + " " + calHoy.get(java.util.Calendar.YEAR));
+        });
+
         searchButton.setOnClickListener(v -> {
             String searchText = searchEditText.getText().toString().trim();
             Search(searchText);
         });
-        
+
         btnNuevaAnotacion.setOnClickListener(v -> {
             crearAnotacion();
         });
@@ -107,7 +125,11 @@ public class HomeFragment extends Fragment {
         currentYear = calendar.get(java.util.Calendar.YEAR);
         currentMonth = calendar.get(java.util.Calendar.MONTH);
         currentDay = calendar.get(java.util.Calendar.DAY_OF_MONTH);
-        
+
+        if (monthTitle != null) {
+            monthTitle.setText(meses[currentMonth] + " " + currentYear);
+        }
+
         loadMatchesForDate(currentYear, currentMonth, currentDay);
         loadRecommendedMatches();
     }
@@ -115,18 +137,17 @@ public class HomeFragment extends Fragment {
     private void loadMatchesForDate(int year, int month, int day) {
         SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
         String token = prefs.getString("accessToken", null);
-        
+
         ApiService apiServiceConToken = token != null ? RetrofitClient.getApiService(token) : RetrofitClient.getApiService();
-        
+
         String date = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, day);
-        
+
         apiServiceConToken.getEventsByDate(date).enqueue(new Callback<ApiService.EventsResponse>() {
             @Override
             public void onResponse(Call<ApiService.EventsResponse> call, Response<ApiService.EventsResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     List<Evento> dayMatches = response.body().getData();
-                    
-                    //actualizar adapter
+
                     if (matchAdapter != null && matchAdapter.getEventoList() != null) {
                         matchAdapter.getEventoList().clear();
                         if (dayMatches != null) {
@@ -150,21 +171,17 @@ public class HomeFragment extends Fragment {
     private void loadRecommendedMatches() {
         SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
         String token = prefs.getString("accessToken", null);
-        
+
         ApiService apiServiceConToken = token != null ? RetrofitClient.getApiService(token) : RetrofitClient.getApiService();
-        
-        
+
         apiServiceConToken.getRecommendedEvents().enqueue(new Callback<ApiService.EventsResponse>() {
             @Override
             public void onResponse(Call<ApiService.EventsResponse> call, Response<ApiService.EventsResponse> response) {
-                
                 try {
                     if (response.isSuccessful() && response.body() != null) {
-                        
                         if (response.body().isSuccess()) {
                             List<Evento> recommendedMatches = response.body().getData();
-                            
-                            //actualizar adapter
+
                             if (recomendadosAdapter != null && recomendadosAdapter.getEventoList() != null) {
                                 recomendadosAdapter.getEventoList().clear();
                                 if (recommendedMatches != null) {
@@ -193,32 +210,22 @@ public class HomeFragment extends Fragment {
     private void Search(String searchText) {
         SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
         String token = prefs.getString("accessToken", null);
-        
+
         ApiService apiServiceConToken = token != null ? RetrofitClient.getApiService(token) : RetrofitClient.getApiService();
-        
+
         if (searchText.isEmpty()) {
             loadAllMatches();
             return;
         }
-        
-        
+
         apiServiceConToken.searchEvents(null, null, searchText, null, null).enqueue(new Callback<ApiService.EventsResponse>() {
             @Override
             public void onResponse(Call<ApiService.EventsResponse> call, Response<ApiService.EventsResponse> response) {
-                
                 try {
                     if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                         List<Evento> searchResults = response.body().getData();
-                        
-                        //actualizar adapter
+
                         if (matchAdapter != null && matchAdapter.getEventoList() != null) {
-                            matchAdapter.getEventoList().clear();
-                            if (searchResults != null) {
-                                matchAdapter.getEventoList().addAll(searchResults);
-                            }
-                            matchAdapter.notifyDataSetChanged();
-                        } else {
-                            Log.e(TAG, "matchAdapter o getEventoList() es null");
                         }
                     } else {
                     }
@@ -233,38 +240,43 @@ public class HomeFragment extends Fragment {
             }
         });
     }
-    
+
     private void crearAnotacion() {
         SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
         String token = prefs.getString("accessToken", null);
-        
+
         if (token == null) {
             Toast.makeText(getContext(), "Debes iniciar sesión", Toast.LENGTH_SHORT).show();
             return;
         }
-        
+
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getContext());
         builder.setTitle("Nueva Anotación");
-        
+
         android.view.View dialogView = getLayoutInflater().inflate(R.layout.dialog_anotacion, null);
         builder.setView(dialogView);
-        
+
         android.widget.EditText tituloEditText = dialogView.findViewById(R.id.edit_text_titulo);
         android.widget.EditText descripcionEditText = dialogView.findViewById(R.id.edit_text_descripcion);
-        
+
         builder.setPositiveButton("Guardar", (dialog, which) -> {
             String titulo = tituloEditText.getText().toString().trim();
             String descripcion = descripcionEditText.getText().toString().trim();
-            
+
             if (titulo.isEmpty()) {
                 Toast.makeText(getContext(), "El título es obligatorio", Toast.LENGTH_SHORT).show();
                 return;
             }
-            
-            String fecha = String.format(Locale.getDefault(), "%04d-%02d-%02dT10:00:00", currentYear, currentMonth + 1, currentDay);
-            
+
+            java.util.Calendar ahora = java.util.Calendar.getInstance();
+            int horaActual = ahora.get(java.util.Calendar.HOUR_OF_DAY);
+            int minutoActual = ahora.get(java.util.Calendar.MINUTE);
+
+            String fecha = String.format(Locale.getDefault(), "%04d-%02d-%02dT%02d:%02d:00",
+                    currentYear, currentMonth + 1, currentDay, horaActual, minutoActual);
+
             ApiService.AnotacionRequest request = new ApiService.AnotacionRequest(titulo, descripcion, fecha);
-            
+
             ApiService apiServiceConToken = RetrofitClient.getApiService(token);
             apiServiceConToken.createAnotacion(request).enqueue(new Callback<ApiResponse>() {
                 @Override
@@ -280,30 +292,30 @@ public class HomeFragment extends Fragment {
                         Toast.makeText(getContext(), "Error en el servidor", Toast.LENGTH_SHORT).show();
                     }
                 }
-                
+
                 @Override
                 public void onFailure(Call<ApiResponse> call, Throwable t) {
                     Toast.makeText(getContext(), "Error de conexión", Toast.LENGTH_SHORT).show();
                 }
             });
         });
-        
+
         builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
-        
+
         builder.show();
     }
-    
+
     private void loadAnotacionesForDate(int year, int month, int day) {
         SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
         String token = prefs.getString("accessToken", null);
-        
+
         if (token == null) {
             anotacionesLL.setVisibility(View.GONE);
             return;
         }
-        
+
         String fecha = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, day);
-        
+
         ApiService apiServiceConToken = RetrofitClient.getApiService(token);
         apiServiceConToken.getAnotaciones(fecha).enqueue(new Callback<ApiService.AnotacionesResponse>() {
             @Override
@@ -311,7 +323,7 @@ public class HomeFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     if (response.body().isSuccess()) {
                         List<Anotacion> anotaciones = response.body().getData();
-                        
+
                         if (anotaciones != null && !anotaciones.isEmpty()) {
                             anotacionAdapter.getAnotacionList().clear();
                             anotacionAdapter.getAnotacionList().addAll(anotaciones);
@@ -334,30 +346,29 @@ public class HomeFragment extends Fragment {
             }
         });
     }
-    
+
     private void obtenerTokenFCM() {
         FirebaseMessaging.getInstance().getToken()
-            .addOnCompleteListener(task -> {
-                if (task.isSuccessful() && task.getResult() != null) {
-                    String token = task.getResult();
-                    Log.d(TAG, "Token FCM obtenido: " + token);
-                    
-                    // Enviar token al backend
-                    enviarTokenAlBackend(token);
-                } else {
-                    Log.w(TAG, "No se pudo obtener el token FCM");
-                }
-            });
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        String token = task.getResult();
+                        Log.d(TAG, "Token FCM obtenido: " + token);
+
+                        enviarTokenAlBackend(token);
+                    } else {
+                        Log.w(TAG, "No se pudo obtener el token FCM");
+                    }
+                });
     }
-    
+
     private void enviarTokenAlBackend(String token) {
         SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
         String accessToken = prefs.getString("accessToken", null);
-        
+
         ApiService apiServiceConToken = accessToken != null ? RetrofitClient.getApiService(accessToken) : RetrofitClient.getApiService();
-        
+
         ApiService.TokenRequest tokenRequest = new ApiService.TokenRequest(token);
-        
+
         apiServiceConToken.registerNotificationToken(tokenRequest).enqueue(new Callback<ApiResponse>() {
             @Override
             public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
@@ -367,7 +378,7 @@ public class HomeFragment extends Fragment {
                     Log.e(TAG, "Error registrando token FCM: " + response.code());
                 }
             }
-            
+
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
                 Log.e(TAG, "Error de red registrando token FCM", t);

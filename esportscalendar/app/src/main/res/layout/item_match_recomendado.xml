@@ -36,13 +36,13 @@
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/btn_notificar_container"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:clickable="true"
                 android:elevation="8dp"
                 android:focusable="true"
-                app:cardBackgroundColor="#0997B1"
-                app:cardCornerRadius="14dp"
+                app:cardBackgroundColor="#0D1B6D"
+                app:cardCornerRadius="12dp"
                 app:cardElevation="2dp">
 
                 <ImageView
