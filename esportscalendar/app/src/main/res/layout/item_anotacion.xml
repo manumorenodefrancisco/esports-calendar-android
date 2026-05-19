@@ -1,65 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="180dp"
+    android:layout_width="220dp"
     android:layout_height="wrap_content"
-    android:layout_marginEnd="12dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="0dp"
-    android:backgroundTint="#BFFFFCCF">
+    android:layout_marginVertical="8dp"
+    android:layout_marginEnd="16dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="#10228E">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="12dp">
+        android:padding="16dp">
 
         <TextView
             android:id="@+id/text_view_anotacion_titulo"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Título de la anotación"
-            android:textColor="#0D1B6D"
-            android:textSize="14sp"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
             android:textStyle="bold"
             android:maxLines="1"
-            android:ellipsize="end" />
+            android:ellipsize="end"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
             android:id="@+id/text_view_anotacion_descripcion"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Descripción de la anotación"
-            android:textColor="#666666"
-            android:textSize="12sp"
-            android:maxLines="2"
-            android:ellipsize="end" />
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:layout_marginTop="6dp"
+            android:text="Descripción de la anotación para el calendario de eSports."
+            android:textColor="#E0E0E0"
+            android:textSize="13sp"
+            android:maxLines="3"
+            android:ellipsize="end"
+            android:lineSpacingExtra="3dp"
+            app:layout_constraintTop_toBottomOf="@id/text_view_anotacion_titulo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-            <TextView
-                android:id="@+id/text_view_anotacion_hora"
-                android:layout_width="127dp"
-                android:layout_height="40dp"
-                android:layout_marginTop="4dp"
-                android:text="10:00"
-                android:textColor="#999999"
-                android:textSize="10sp" />
+        <TextView
+            android:id="@+id/text_view_anotacion_hora"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/search_bar_background"
+            android:backgroundTint="#263238"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp"
+            android:text="10:00"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@id/text_view_anotacion_descripcion"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/container_btn_borrar"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            app:cardBackgroundColor="#B71C1C"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/text_view_anotacion_hora">
 
             <ImageView
                 android:id="@+id/btn_borrar_anotacion"
-                android:layout_width="30dp"
-                android:layout_height="44dp"
-                android:layout_marginTop="2dp"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="center"
                 android:contentDescription="Borrar"
                 android:src="@drawable/ic_bin"
-                app:tint="#FA6A6A" />
-        </LinearLayout>
+                app:tint="#FFFFFF" />
 
-    </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.cardview.widget.CardView>
