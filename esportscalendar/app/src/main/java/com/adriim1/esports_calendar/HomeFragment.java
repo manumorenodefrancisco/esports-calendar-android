@@ -1,5 +1,6 @@
 package com.adriim1.esports_calendar;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -7,11 +8,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,16 +23,19 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
 
@@ -41,7 +47,6 @@ public class HomeFragment extends Fragment {
     private EventoAdapter matchAdapter;
     private AnotacionAdapter anotacionAdapter;
     private EventoAdapter recomendadosAdapter;
-    private List<Evento> allMatches;
     private ApiService apiService;
     private LinearLayout anotacionesLL;
 
@@ -51,17 +56,22 @@ public class HomeFragment extends Fragment {
             "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
     };
 
+    // Filtros
+    private String selectedVideogame = null;
+    private String selectedStatus = null;
+    private String lastSearchText = "";
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         CalendarView calendarView = view.findViewById(R.id.calendarView);
-        View dayContent = view.findViewById(R.id.dayContent);
         Button todayButton = view.findViewById(R.id.todayButton);
         EditText searchEditText = view.findViewById(R.id.edit_text_search);
         ImageButton searchButton = view.findViewById(R.id.btn_search);
         Button btnNuevaAnotacion = view.findViewById(R.id.btn_nueva_anotacion);
+        View btnFilters = view.findViewById(R.id.btn_open_filters);
 
         monthTitle = view.findViewById(R.id.monthTitle);
 
@@ -82,8 +92,11 @@ public class HomeFragment extends Fragment {
         if (btnReloadContainer != null) btnReloadContainer.setOnClickListener(reloadAction);
         if (btnReload != null) btnReload.setOnClickListener(reloadAction);
 
+        if (btnFilters != null) {
+            btnFilters.setOnClickListener(v -> mostrarDialogoFiltros());
+        }
+
         apiService = RetrofitClient.getApiService();
-        allMatches = new ArrayList<>();
         matchAdapter = new EventoAdapter(new ArrayList<>());
         matchesRecyclerView.setAdapter(matchAdapter);
 
@@ -94,8 +107,6 @@ public class HomeFragment extends Fragment {
         recomendadosRecyclerView.setAdapter(recomendadosAdapter);
 
         loadAllMatches();
-
-        obtenerTokenFCM();
 
         calendarView.setOnDateChangeListener((@NonNull CalendarView cv, int year, int month, int dayOfMonth) -> {
             currentYear = year;
@@ -119,8 +130,8 @@ public class HomeFragment extends Fragment {
         });
 
         searchButton.setOnClickListener(v -> {
-            String searchText = searchEditText.getText().toString().trim();
-            Search(searchText);
+            lastSearchText = searchEditText.getText().toString().trim();
+            Search(lastSearchText);
         });
 
         btnNuevaAnotacion.setOnClickListener(v -> {
@@ -128,6 +139,108 @@ public class HomeFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void mostrarDialogoFiltros() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Filtros de Eventos");
+
+        LinearLayout layout = new LinearLayout(getContext());
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(60, 40, 60, 20);
+
+        // Spinner para Videojuego
+        TextView tvGame = new TextView(getContext());
+        tvGame.setText("Videojuego:");
+        tvGame.setPadding(0, 10, 0, 10);
+        layout.addView(tvGame);
+
+        Spinner spinnerGame = new Spinner(getContext());
+        String[] games = {"Todos", "League of Legends", "Valorant", "CS:GO", "Dota 2", "Overwatch", "Rocket League"};
+        ArrayAdapter<String> gameAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, games);
+        spinnerGame.setAdapter(gameAdapter);
+        
+        if (selectedVideogame != null) {
+            for (int i = 0; i < games.length; i++) {
+                if (games[i].equalsIgnoreCase(selectedVideogame)) {
+                    spinnerGame.setSelection(i);
+                    break;
+                }
+            }
+        }
+        layout.addView(spinnerGame);
+
+        // Spinner para Status
+        TextView tvStatus = new TextView(getContext());
+        tvStatus.setText("\nEstado:");
+        tvStatus.setPadding(0, 10, 0, 10);
+        layout.addView(tvStatus);
+
+        Spinner spinnerStatus = new Spinner(getContext());
+        String[] statuses = {"Todos", "not_started", "running", "finished"};
+        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, statuses);
+        spinnerStatus.setAdapter(statusAdapter);
+
+        if (selectedStatus != null) {
+            for (int i = 0; i < statuses.length; i++) {
+                if (statuses[i].equals(selectedStatus)) {
+                    spinnerStatus.setSelection(i);
+                    break;
+                }
+            }
+        }
+        layout.addView(spinnerStatus);
+
+        builder.setView(layout);
+
+        builder.setPositiveButton("Aplicar", (dialog, which) -> {
+            String game = spinnerGame.getSelectedItem().toString();
+            String status = spinnerStatus.getSelectedItem().toString();
+
+            selectedVideogame = game.equals("Todos") ? null : game;
+            selectedStatus = status.equals("Todos") ? null : status;
+
+            Search(lastSearchText);
+        });
+
+        builder.setNegativeButton("Limpiar", (dialog, which) -> {
+            selectedVideogame = null;
+            selectedStatus = null;
+            Search(lastSearchText);
+        });
+
+        builder.show();
+    }
+
+    private void Search(String searchText) {
+        SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
+        String token = prefs.getString("accessToken", null);
+
+        ApiService apiServiceConToken = token != null ? RetrofitClient.getApiService(token) : RetrofitClient.getApiService();
+
+        if ((searchText == null || searchText.isEmpty()) && selectedVideogame == null && selectedStatus == null) {
+            loadMatchesForDate(currentYear, currentMonth, currentDay);
+            return;
+        }
+
+        apiServiceConToken.searchEvents(null, null, searchText, selectedVideogame, selectedStatus).enqueue(new Callback<ApiService.EventsResponse>() {
+            @Override
+            public void onResponse(Call<ApiService.EventsResponse> call, Response<ApiService.EventsResponse> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    List<Evento> results = response.body().getData();
+                    if (matchAdapter != null) {
+                        matchAdapter.getEventoList().clear();
+                        if (results != null) matchAdapter.getEventoList().addAll(results);
+                        matchAdapter.notifyDataSetChanged();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiService.EventsResponse> call, Throwable t) {
+                Log.e(TAG, "Error en búsqueda", t);
+            }
+        });
     }
 
     private void generateAndLoadRecommendations() {
@@ -147,31 +260,22 @@ public class HomeFragment extends Fragment {
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     Log.d(TAG, "Preferencias generadas con éxito, recargando lista...");
-                    // Segunda llamada: GET para refrescar los recomendados
                     loadRecommendedMatches();
                 } else {
                     try {
                         String errorMsg = response.errorBody() != null ? response.errorBody().string() : "Error desconocido";
-                        Log.w(TAG, "No se pudieron generar preferencias: " + errorMsg);
-                        
                         String displayMsg = "Error al actualizar preferencias";
                         if (response.code() == 400) {
                             try {
                                 JsonObject jsonObject = JsonParser.parseString(errorMsg).getAsJsonObject();
-                                if (jsonObject.has("error")) {
-                                    displayMsg = jsonObject.get("error").getAsString();
-                                } else {
-                                    displayMsg = errorMsg;
-                                }
+                                displayMsg = jsonObject.has("error") ? jsonObject.get("error").getAsString() : errorMsg;
                             } catch (Exception e) {
                                 displayMsg = errorMsg;
                             }
                         }
                         Toast.makeText(getContext(), displayMsg, Toast.LENGTH_LONG).show();
-                        
                     } catch (Exception e) {
-                        Log.e(TAG, "Error procesando errorBody", e);
-                        Toast.makeText(getContext(), "Error al actualizar preferencias", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Error procesando respuesta", e);
                     }
                 }
             }
@@ -201,7 +305,6 @@ public class HomeFragment extends Fragment {
     private void loadMatchesForDate(int year, int month, int day) {
         SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
         String token = prefs.getString("accessToken", null);
-
         ApiService apiServiceConToken = token != null ? RetrofitClient.getApiService(token) : RetrofitClient.getApiService();
 
         String date = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, day);
@@ -211,23 +314,17 @@ public class HomeFragment extends Fragment {
             public void onResponse(Call<ApiService.EventsResponse> call, Response<ApiService.EventsResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     List<Evento> dayMatches = response.body().getData();
-
-                    if (matchAdapter != null && matchAdapter.getEventoList() != null) {
+                    if (matchAdapter != null) {
                         matchAdapter.getEventoList().clear();
-                        if (dayMatches != null) {
-                            matchAdapter.getEventoList().addAll(dayMatches);
-                        }
+                        if (dayMatches != null) matchAdapter.getEventoList().addAll(dayMatches);
                         matchAdapter.notifyDataSetChanged();
-                    } else {
-                        Log.e(TAG, "matchAdapter o getEventoList() es null");
                     }
-                } else {
                 }
             }
 
             @Override
             public void onFailure(Call<ApiService.EventsResponse> call, Throwable t) {
-                Log.e(TAG, "Error de conexion cargando matches para fecha: " + date, t);
+                Log.e(TAG, "Error cargando matches por fecha", t);
             }
         });
     }
@@ -235,72 +332,24 @@ public class HomeFragment extends Fragment {
     private void loadRecommendedMatches() {
         SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
         String token = prefs.getString("accessToken", null);
-
         ApiService apiServiceConToken = token != null ? RetrofitClient.getApiService(token) : RetrofitClient.getApiService();
 
         apiServiceConToken.getRecommendedEvents().enqueue(new Callback<ApiService.EventsResponse>() {
             @Override
             public void onResponse(Call<ApiService.EventsResponse> call, Response<ApiService.EventsResponse> response) {
-                try {
-                    if (response.isSuccessful() && response.body() != null) {
-                        if (response.body().isSuccess()) {
-                            List<Evento> recommendedMatches = response.body().getData();
-
-                            if (recomendadosAdapter != null && recomendadosAdapter.getEventoList() != null) {
-                                recomendadosAdapter.getEventoList().clear();
-                                if (recommendedMatches != null) {
-                                    recomendadosAdapter.getEventoList().addAll(recommendedMatches);
-                                }
-                                recomendadosAdapter.notifyDataSetChanged();
-                            } else {
-                                Log.e(TAG, "recomendadosAdapter o getEventoList() es null");
-                            }
-                        } else {
-                        }
-                    } else {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    List<Evento> recommendedMatches = response.body().getData();
+                    if (recomendadosAdapter != null) {
+                        recomendadosAdapter.getEventoList().clear();
+                        if (recommendedMatches != null) recomendadosAdapter.getEventoList().addAll(recommendedMatches);
+                        recomendadosAdapter.notifyDataSetChanged();
                     }
-                } catch (Exception e) {
-                    Log.e(TAG, "Excepción procesando respuesta", e);
                 }
             }
 
             @Override
             public void onFailure(Call<ApiService.EventsResponse> call, Throwable t) {
-                Log.e(TAG, "Error de conexion cargando partidos recomendados", t);
-            }
-        });
-    }
-
-    private void Search(String searchText) {
-        SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
-        String token = prefs.getString("accessToken", null);
-
-        ApiService apiServiceConToken = token != null ? RetrofitClient.getApiService(token) : RetrofitClient.getApiService();
-
-        if (searchText.isEmpty()) {
-            loadAllMatches();
-            return;
-        }
-
-        apiServiceConToken.searchEvents(null, null, searchText, null, null).enqueue(new Callback<ApiService.EventsResponse>() {
-            @Override
-            public void onResponse(Call<ApiService.EventsResponse> call, Response<ApiService.EventsResponse> response) {
-                try {
-                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                        List<Evento> searchResults = response.body().getData();
-
-                        if (matchAdapter != null && matchAdapter.getEventoList() != null) {
-                        }
-                    } else {
-                    }
-                } catch (Exception e) {
-                    Log.e(TAG, "Excepción procesando respuesta búsqueda", e);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiService.EventsResponse> call, Throwable t) {
-                Log.e(TAG, "Error de conexion en búsqueda", t);
+                Log.e(TAG, "Error cargando recomendados", t);
             }
         });
     }
@@ -314,14 +363,13 @@ public class HomeFragment extends Fragment {
             return;
         }
 
-        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Nueva Anotación");
-
-        android.view.View dialogView = getLayoutInflater().inflate(R.layout.dialog_anotacion, null);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_anotacion, null);
         builder.setView(dialogView);
 
-        android.widget.EditText tituloEditText = dialogView.findViewById(R.id.edit_text_titulo);
-        android.widget.EditText descripcionEditText = dialogView.findViewById(R.id.edit_text_descripcion);
+        EditText tituloEditText = dialogView.findViewById(R.id.edit_text_titulo);
+        EditText descripcionEditText = dialogView.findViewById(R.id.edit_text_descripcion);
 
         builder.setPositiveButton("Guardar", (dialog, which) -> {
             String titulo = tituloEditText.getText().toString().trim();
@@ -340,20 +388,15 @@ public class HomeFragment extends Fragment {
                     currentYear, currentMonth + 1, currentDay, horaActual, minutoActual);
 
             ApiService.AnotacionRequest request = new ApiService.AnotacionRequest(titulo, descripcion, fecha);
-
             ApiService apiServiceConToken = RetrofitClient.getApiService(token);
             apiServiceConToken.createAnotacion(request).enqueue(new Callback<ApiResponse>() {
                 @Override
                 public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        if (response.body().isSuccess()) {
-                            Toast.makeText(getContext(), "Anotación creada", Toast.LENGTH_SHORT).show();
-                            loadAnotacionesForDate(currentYear, currentMonth, currentDay);
-                        } else {
-                            Toast.makeText(getContext(), "Error al crear anotación", Toast.LENGTH_SHORT).show();
-                        }
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        Toast.makeText(getContext(), "Anotación creada", Toast.LENGTH_SHORT).show();
+                        loadAnotacionesForDate(currentYear, currentMonth, currentDay);
                     } else {
-                        Toast.makeText(getContext(), "Error en el servidor", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Error al crear anotación", Toast.LENGTH_SHORT).show();
                     }
                 }
 
@@ -365,7 +408,6 @@ public class HomeFragment extends Fragment {
         });
 
         builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
-
         builder.show();
     }
 
@@ -374,79 +416,35 @@ public class HomeFragment extends Fragment {
         String token = prefs.getString("accessToken", null);
 
         if (token == null) {
-            anotacionesLL.setVisibility(View.GONE);
+            if (anotacionesLL != null) anotacionesLL.setVisibility(View.GONE);
             return;
         }
 
         String fecha = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, day);
-
         ApiService apiServiceConToken = RetrofitClient.getApiService(token);
         apiServiceConToken.getAnotaciones(fecha).enqueue(new Callback<ApiService.AnotacionesResponse>() {
             @Override
             public void onResponse(Call<ApiService.AnotacionesResponse> call, Response<ApiService.AnotacionesResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    if (response.body().isSuccess()) {
-                        List<Anotacion> anotaciones = response.body().getData();
-
-                        if (anotaciones != null && !anotaciones.isEmpty()) {
-                            anotacionAdapter.getAnotacionList().clear();
-                            anotacionAdapter.getAnotacionList().addAll(anotaciones);
-                            anotacionAdapter.notifyDataSetChanged();
-                            anotacionesLL.setVisibility(View.VISIBLE);
-                        } else {
-                            anotacionesLL.setVisibility(View.GONE);
-                        }
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    List<Anotacion> anotaciones = response.body().getData();
+                    if (anotaciones != null && !anotaciones.isEmpty()) {
+                        anotacionAdapter.getAnotacionList().clear();
+                        anotacionAdapter.getAnotacionList().addAll(anotaciones);
+                        anotacionAdapter.notifyDataSetChanged();
+                        if (anotacionesLL != null) anotacionesLL.setVisibility(View.VISIBLE);
                     } else {
-                        anotacionesLL.setVisibility(View.GONE);
+                        if (anotacionesLL != null) anotacionesLL.setVisibility(View.GONE);
                     }
                 } else {
-                    anotacionesLL.setVisibility(View.GONE);
+                    if (anotacionesLL != null) anotacionesLL.setVisibility(View.GONE);
                 }
             }
 
             @Override
             public void onFailure(Call<ApiService.AnotacionesResponse> call, Throwable t) {
-                anotacionesLL.setVisibility(View.GONE);
+                if (anotacionesLL != null) anotacionesLL.setVisibility(View.GONE);
             }
         });
     }
 
-    private void obtenerTokenFCM() {
-        FirebaseMessaging.getInstance().getToken()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful() && task.getResult() != null) {
-                        String token = task.getResult();
-                        Log.d(TAG, "Token FCM obtenido: " + token);
-
-                        enviarTokenAlBackend(token);
-                    } else {
-                        Log.w(TAG, "No se pudo obtener el token FCM");
-                    }
-                });
-    }
-
-    private void enviarTokenAlBackend(String token) {
-        SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
-        String accessToken = prefs.getString("accessToken", null);
-
-        ApiService apiServiceConToken = accessToken != null ? RetrofitClient.getApiService(accessToken) : RetrofitClient.getApiService();
-
-        ApiService.TokenRequest tokenRequest = new ApiService.TokenRequest(token);
-
-        apiServiceConToken.registerNotificationToken(tokenRequest).enqueue(new Callback<ApiResponse>() {
-            @Override
-            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    Log.d(TAG, "Token FCM registrado exitosamente");
-                } else {
-                    Log.e(TAG, "Error registrando token FCM: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Log.e(TAG, "Error de red registrando token FCM", t);
-            }
-        });
-    }
 }

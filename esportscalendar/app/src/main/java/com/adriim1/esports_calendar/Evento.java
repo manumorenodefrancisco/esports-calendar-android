@@ -44,6 +44,21 @@ public class Evento {
         return scheduled_at;
     }
 
+    //(hora de España UTC+2)
+    public String getScheduled_at_espana() {
+        if (scheduled_at != null && scheduled_at.length() >= 13) {
+            try {
+                int hora = Integer.parseInt(scheduled_at.substring(11, 13));
+                int horaEspana = (hora + 2) % 24;
+                String horaStr = String.format("%02d", horaEspana);
+                return scheduled_at.substring(0, 11) + horaStr + scheduled_at.substring(13);
+            } catch (Exception e) {
+                return scheduled_at;
+            }
+        }
+        return scheduled_at;
+    }
+
     public void setScheduled_at(String scheduled_at) {
         this.scheduled_at = scheduled_at;
     }

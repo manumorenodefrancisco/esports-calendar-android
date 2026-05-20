@@ -62,13 +62,16 @@ public class NotisReceptorReinicio extends BroadcastReceiver {
         if (evento == null || evento.getScheduled_at() == null) return;
 
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
-            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX", Locale.getDefault());
+            //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+            //sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
             Date dateEvento = sdf.parse(evento.getScheduled_at());
             if (dateEvento == null) return;
 
             long timeEventoMillis = dateEvento.getTime();
             long currentTime = System.currentTimeMillis();
+            Log.d(TAG, "Partido: " + evento.getMatch_name() + " es a las: " + dateEvento.toString());
+
             AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             String matchName = evento.getMatch_name() != null ? evento.getMatch_name() : "Partido";
 

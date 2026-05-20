@@ -28,5 +28,7 @@ public class HomeActivity extends AppCompatActivity {
         btnContact.setOnClickListener(v -> {
             // contacto
         });
+
+        sendBroadcast(new Intent(this, NotisReceptorReinicio.class).setAction(Intent.ACTION_BOOT_COMPLETED));
     }
 }
