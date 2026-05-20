@@ -29,6 +29,5 @@ public class HomeActivity extends AppCompatActivity {
             // contacto
         });
 
-        sendBroadcast(new Intent(this, NotisReceptorReinicio.class).setAction(Intent.ACTION_BOOT_COMPLETED));
-    }
+        new NotisReceptorReinicio().onReceive(this, new Intent(Intent.ACTION_BOOT_COMPLETED));    }
 }
