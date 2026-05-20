@@ -110,7 +110,8 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
 
             String time = "Sin hora";
             if (evento.getScheduled_at() != null && evento.getScheduled_at().length() >= 16) {
-                time = evento.getScheduled_at().substring(11, 16);
+                //time = evento.getScheduled_at().substring(11, 16);
+                time = evento.getScheduled_at_espana().substring(11, 16);
             }
             timeTV.setText(time);
 
@@ -185,7 +186,7 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
             matchNameTV.setText(evento.getMatch_name() != null ? evento.getMatch_name() : "");
 
             if (evento.getScheduled_at() != null && evento.getScheduled_at().length() >= 16) {
-                String fullDate = evento.getScheduled_at();
+                String fullDate = evento.getScheduled_at_espana();
                 String dateStr = fullDate.substring(8, 10) + "/" + fullDate.substring(5, 7);
                 String timeStr = fullDate.substring(11, 16);
                 dateTV.setText(dateStr);
@@ -356,14 +357,6 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
                                     String matchTitle = evento.getMatch_name() != null ? evento.getMatch_name() : "el evento";
                                     Toast.makeText(itemView.getContext(), "Suscrito a: " + matchTitle, Toast.LENGTH_SHORT).show();
 
-                                    Map<String, String> notiData = new HashMap<>();
-                                    notiData.put("titulo", "Nueva Suscripción");
-                                    notiData.put("mensaje", "Te has suscrito a " + matchTitle);
-                                    notiData.put("evento_nombre", matchTitle);
-                                    apiServiceConToken.addNotification(notiData).enqueue(new Callback<ApiResponse>() {
-                                        @Override public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {}
-                                        @Override public void onFailure(Call<ApiResponse> call, Throwable t) {}
-                                    });
                                 } else {
                                     Toast.makeText(itemView.getContext(), "Error al suscribirse. Intenta de nuevo.", Toast.LENGTH_SHORT).show();
                                     Log.e(TAG, "Error al suscribirse: código " + response.code());

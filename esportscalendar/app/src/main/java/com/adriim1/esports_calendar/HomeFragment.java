@@ -107,7 +107,6 @@ public class HomeFragment extends Fragment {
         recomendadosRecyclerView.setAdapter(recomendadosAdapter);
 
         loadAllMatches();
-        obtenerTokenFCM();
 
         calendarView.setOnDateChangeListener((@NonNull CalendarView cv, int year, int month, int dayOfMonth) -> {
             currentYear = year;
@@ -448,34 +447,4 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    private void obtenerTokenFCM() {
-        FirebaseMessaging.getInstance().getToken()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful() && task.getResult() != null) {
-                        String token = task.getResult();
-                        Log.d(TAG, "Token FCM obtenido: " + token);
-                        enviarTokenAlBackend(token);
-                    }
-                });
-    }
-
-    private void enviarTokenAlBackend(String token) {
-        SharedPreferences prefs = getActivity().getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
-        String accessToken = prefs.getString("accessToken", null);
-        if (accessToken == null) return;
-
-        ApiService apiServiceConToken = RetrofitClient.getApiService(accessToken);
-        ApiService.TokenRequest tokenRequest = new ApiService.TokenRequest(token);
-        apiServiceConToken.registerNotificationToken(tokenRequest).enqueue(new Callback<ApiResponse>() {
-            @Override
-            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
-                if (response.isSuccessful()) Log.d(TAG, "Token FCM registrado");
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse> call, Throwable t) {
-                Log.e(TAG, "Error FCM", t);
-            }
-        });
-    }
 }

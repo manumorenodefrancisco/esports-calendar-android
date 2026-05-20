@@ -87,7 +87,8 @@ public class SuscripcionAdapter extends RecyclerView.Adapter<SuscripcionAdapter.
 
                 String time = "Sin hora";
                 if (evento.getScheduled_at() != null && evento.getScheduled_at().length() >= 16) {
-                    time = evento.getScheduled_at().substring(11, 16);
+                    //time = evento.getScheduled_at().substring(11, 16);
+                    time = evento.getScheduled_at_espana().substring(11, 16);
                 }
                 timeTV.setText(time);
 
@@ -96,10 +97,10 @@ public class SuscripcionAdapter extends RecyclerView.Adapter<SuscripcionAdapter.
 
                 String tipo = "";
                 if (sus.isRecordatorio_1_hora()) {
-                    tipo += "1h ";
+                    tipo += "1h antes ";
                 }
                 if (sus.isRecordatorio_5_minutos()) {
-                    tipo += "5m";
+                    tipo += "5m antes";
                 }
                 if (tipo.isEmpty()) {
                     tipo = "Sin alertas";
@@ -119,31 +120,24 @@ public class SuscripcionAdapter extends RecyclerView.Adapter<SuscripcionAdapter.
             if (evento == null || evento.getScheduled_at() == null) return;
 
             try {
-                // Parsear la fecha del evento (Asumiendo formato ISO 8601 de Django)
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
                 sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
                 Date dateEvento = sdf.parse(evento.getScheduled_at());
                 if (dateEvento == null) return;
 
                 long timeEventoMillis = dateEvento.getTime();
+                AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
                 long currentTime = System.currentTimeMillis();
 
-                AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
-                // 1. Alarma de 1 hora antes
                 if (sus.isRecordatorio_1_hora()) {
                     long triggerTime = timeEventoMillis - (60 * 60 * 1000);
-                    if (triggerTime > currentTime) {
-                        setAlarm(alarmManager, triggerTime, evento.getId() * 10 + 1, matchName, "¡El partido empieza en 1 hora!");
-                    }
+                    if (triggerTime > currentTime) setAlarm(alarmManager, triggerTime, evento.getId() * 10 + 1, matchName, "¡El partido empieza en 1 hora!");
                 }
 
-                // 2. Alarma de 5 minutos antes
                 if (sus.isRecordatorio_5_minutos()) {
                     long triggerTime = timeEventoMillis - (5 * 60 * 1000);
-                    if (triggerTime > currentTime) {
-                        setAlarm(alarmManager, triggerTime, evento.getId() * 10 + 2, matchName, "¡El partido empieza en 5 minutos!");
-                    }
+                    if (triggerTime > currentTime) setAlarm(alarmManager, triggerTime, evento.getId() * 10 + 2, matchName, "¡El partido está a punto de comenzar!");
                 }
 
             } catch (Exception e) {
@@ -164,13 +158,13 @@ public class SuscripcionAdapter extends RecyclerView.Adapter<SuscripcionAdapter.
 
             PendingIntent pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent, flags);
 
-            // setAndAllowWhileIdle es preciso sin ser tan restrictivo como setExact
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                // setAndAllowWhileIdle es el que permite que suene en reposo
                 alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
             } else {
                 alarmManager.set(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
             }
-            Log.d(TAG, "Alarma programada para ID " + requestCode + " en " + new Date(triggerTime));
+            Log.d(TAG, "Alarma configurada para: " + new Date(triggerTime).toString() + " (ID: " + requestCode + ")");
         }
 
         private String getStatusText(String status) {
@@ -224,7 +218,7 @@ public class SuscripcionAdapter extends RecyclerView.Adapter<SuscripcionAdapter.
             matchNameTV.setText(evento.getMatch_name() != null ? evento.getMatch_name() : "");
 
             if (evento.getScheduled_at() != null && evento.getScheduled_at().length() >= 16) {
-                String fullDate = evento.getScheduled_at();
+                String fullDate = evento.getScheduled_at_espana();
                 String dateStr = fullDate.substring(8, 10) + "/" + fullDate.substring(5, 7);
                 String timeStr = fullDate.substring(11, 16);
                 dateTV.setText(dateStr);

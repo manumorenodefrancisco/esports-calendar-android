@@ -61,15 +61,6 @@ public interface ApiService {
 
     @PUT("api/update-perfil/")
     Call<ApiResponse> actualizarPerfil(@Body PerfilRequest perfilRequest);
-
-    @POST("api/notifications/register-token/")
-    Call<ApiResponse> registerNotificationToken(@Body TokenRequest tokenRequest);
-    
-    @GET("api/notifications/")
-    Call<NotificacionesResponse> getNotificaciones();
-    
-    @POST("api/notifications/add/")
-    Call<ApiResponse> addNotification(@Body Map<String, String> notificationData);
     
 
     public static class EventsResponse {
@@ -91,13 +82,6 @@ public interface ApiService {
         private List<Suscripcion> data;
         public boolean isSuccess() { return success; }
         public List<Suscripcion> getData() { return data; }
-    }
-
-    public static class NotificacionesResponse {
-        private boolean success;
-        private List<Notificacion> data;
-        public boolean isSuccess() { return success; }
-        public List<Notificacion> getData() { return data; }
     }
 
     public static class PerfilResponse {
@@ -132,12 +116,6 @@ public interface ApiService {
     public static class RegisterRequest {
         private String email, password1, password2;
         public RegisterRequest(String email, String p1, String p2) { this.email = email; this.password1 = p1; this.password2 = p2; }
-    }
-
-    public static class TokenRequest {
-        private String notification_token;
-        public TokenRequest(String t) { this.notification_token = t; }
-        public String getNotification_token() { return notification_token; }
     }
 
     public static class AnotacionRequest {
