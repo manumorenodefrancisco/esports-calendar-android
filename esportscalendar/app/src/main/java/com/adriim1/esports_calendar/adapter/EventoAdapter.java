@@ -126,7 +126,10 @@ public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoView
 
             itemView.setOnClickListener(v -> mostrarDetalleEvento(evento));
 
-            if (!EventoAdapter.this.mostrarBtnNotificar) {
+            // Ocultar botón de notificación si mostrarBtnNotificar es false o si el evento está finalizado
+            boolean shouldHideButton = !EventoAdapter.this.mostrarBtnNotificar || "finished".equals(evento.getStatus());
+
+            if (shouldHideButton) {
                 if (suscribirBtn != null) suscribirBtn.setVisibility(View.GONE);
                 if (notificarContainer != null) notificarContainer.setVisibility(View.GONE);
             } else {

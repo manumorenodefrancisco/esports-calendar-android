@@ -117,8 +117,13 @@ public class SuscripcionAdapter extends RecyclerView.Adapter<SuscripcionAdapter.
                 btnEliminar.setOnClickListener(v -> eliminarSuscripcion(evento.getId(), matchName));
                 itemView.setOnClickListener(v -> mostrarDetalleEvento(evento));
 
-                // Programar alarmas locales al vincular el item
-                programarAlarma(sus, matchName);
+                // Si el evento está finalizado, eliminar automáticamente la suscripción
+                if ("finished".equals(evento.getStatus())) {
+                    eliminarSuscripcionAutomatica(evento.getId(), matchName);
+                } else {
+                    // Programar alarmas locales solo si el evento no ha terminado
+                    programarAlarma(sus, matchName);
+                }
             }
         }
 
@@ -366,6 +371,40 @@ public class SuscripcionAdapter extends RecyclerView.Adapter<SuscripcionAdapter.
                     pi.cancel();
                 }
             }
+        }
+
+        private void eliminarSuscripcionAutomatica(int eventoId, String matchName) {
+            SharedPreferences prefs = context.getSharedPreferences("EsportsCalendarPrefs", Context.MODE_PRIVATE);
+            String token = prefs.getString("accessToken", null);
+
+            if (token == null) {
+                return;
+            }
+
+            ApiService apiService = RetrofitClient.getApiService(token);
+            apiService.eliminarSuscripcion(eventoId).enqueue(new Callback<ApiResponse>() {
+                @Override
+                public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        Log.d(TAG, "Suscripción eliminada automáticamente para evento finalizado: " + matchName);
+                        // Cancelar alarmas al eliminar la suscripción
+                        cancelarAlarmas(eventoId);
+
+                        int pos = getAdapterPosition();
+                        if (pos != RecyclerView.NO_POSITION) {
+                            suscripcionList.remove(pos);
+                            notifyItemRemoved(pos);
+                        }
+                    } else {
+                        Log.e(TAG, "Error al eliminar suscripción automática: código " + response.code());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse> call, Throwable t) {
+                    Log.e(TAG, "Error de red al eliminar suscripción automática", t);
+                }
+            });
         }
     }
 }
