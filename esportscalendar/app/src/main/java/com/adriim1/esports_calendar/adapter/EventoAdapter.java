@@ -1,4 +1,4 @@
-package com.adriim1.esports_calendar;
+package com.adriim1.esports_calendar.adapter;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -18,14 +18,18 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.adriim1.esports_calendar.api.ApiService;
+import com.adriim1.esports_calendar.R;
+import com.adriim1.esports_calendar.api.RetrofitClient;
+import com.adriim1.esports_calendar.model.ApiResponse;
+import com.adriim1.esports_calendar.model.Evento;
+import com.adriim1.esports_calendar.model.Suscripcion;
 import com.bumptech.glide.Glide;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
 
 public class EventoAdapter extends RecyclerView.Adapter<EventoAdapter.EventoViewHolder> {
 

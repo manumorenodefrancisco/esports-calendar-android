@@ -1,4 +1,4 @@
-package com.adriim1.esports_calendar;
+package com.adriim1.esports_calendar.activity;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -13,6 +13,11 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
+
+import com.adriim1.esports_calendar.fragment.HomeFragment;
+import com.adriim1.esports_calendar.fragment.NotificationsFragment;
+import com.adriim1.esports_calendar.fragment.PerfilFragment;
+import com.adriim1.esports_calendar.R;
 
 public class MainActivity extends AppCompatActivity {
 

@@ -1,4 +1,4 @@
-package com.adriim1.esports_calendar;
+package com.adriim1.esports_calendar.model;
 
 import java.util.List;
 

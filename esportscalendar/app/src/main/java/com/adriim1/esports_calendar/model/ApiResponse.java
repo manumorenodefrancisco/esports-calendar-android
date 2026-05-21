@@ -1,4 +1,4 @@
-package com.adriim1.esports_calendar;
+package com.adriim1.esports_calendar.model;
 
 public class ApiResponse {
     private boolean success;

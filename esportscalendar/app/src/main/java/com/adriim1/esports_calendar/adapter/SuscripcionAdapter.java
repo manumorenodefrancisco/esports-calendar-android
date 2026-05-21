@@ -1,4 +1,4 @@
-package com.adriim1.esports_calendar;
+package com.adriim1.esports_calendar.adapter;
 
 import android.app.AlarmManager;
 import android.app.AlertDialog;
@@ -20,6 +20,13 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.adriim1.esports_calendar.api.ApiService;
+import com.adriim1.esports_calendar.receptor.ReceptorNotis;
+import com.adriim1.esports_calendar.R;
+import com.adriim1.esports_calendar.api.RetrofitClient;
+import com.adriim1.esports_calendar.model.ApiResponse;
+import com.adriim1.esports_calendar.model.Evento;
+import com.adriim1.esports_calendar.model.Suscripcion;
 import com.bumptech.glide.Glide;
 
 import retrofit2.Call;
@@ -146,7 +153,7 @@ public class SuscripcionAdapter extends RecyclerView.Adapter<SuscripcionAdapter.
         }
 
         private void setAlarm(AlarmManager alarmManager, long triggerTime, int requestCode, String matchName, String message) {
-            Intent intent = new Intent(context, NotificationReceiver.class);
+            Intent intent = new Intent(context, ReceptorNotis.class);
             intent.putExtra("matchName", matchName);
             intent.putExtra("message", message);
             intent.putExtra("matchId", requestCode);
@@ -348,7 +355,7 @@ public class SuscripcionAdapter extends RecyclerView.Adapter<SuscripcionAdapter.
 
         private void cancelarAlarmas(int eventoId) {
             AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-            Intent intent = new Intent(context, NotificationReceiver.class);
+            Intent intent = new Intent(context, ReceptorNotis.class);
 
             int[] ids = {eventoId * 10 + 1, eventoId * 10 + 2};
             for (int id : ids) {

@@ -1,4 +1,4 @@
-package com.adriim1.esports_calendar;
+package com.adriim1.esports_calendar.fragment;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -13,6 +13,13 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.adriim1.esports_calendar.api.ApiService;
+import com.adriim1.esports_calendar.R;
+import com.adriim1.esports_calendar.api.RetrofitClient;
+import com.adriim1.esports_calendar.adapter.SuscripcionAdapter;
+import com.adriim1.esports_calendar.model.Suscripcion;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

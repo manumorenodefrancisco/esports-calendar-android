@@ -1,4 +1,4 @@
-package com.adriim1.esports_calendar;
+package com.adriim1.esports_calendar.receptor;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -8,6 +8,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.Log;
+
+import com.adriim1.esports_calendar.api.ApiService;
+import com.adriim1.esports_calendar.api.RetrofitClient;
+import com.adriim1.esports_calendar.model.Evento;
+import com.adriim1.esports_calendar.model.Suscripcion;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -15,9 +21,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
 
-public class NotisReceptorReinicio extends BroadcastReceiver {
+public class ReceptorNotisReinicio extends BroadcastReceiver {
     // 1. Obtener el token de SharedPreferences
     // 2. Llamar a apiService.getSubscriptions()
     // 3. Recorrer la lista y llamar a la lógica de programarAlarma() que creamos en el adaptador.
@@ -89,7 +94,7 @@ public class NotisReceptorReinicio extends BroadcastReceiver {
     }
 
     private void setAlarm(Context context, AlarmManager am, long time, int id, String name, String msg) {
-        Intent intent = new Intent(context, NotificationReceiver.class);
+        Intent intent = new Intent(context, ReceptorNotis.class);
         intent.putExtra("matchName", name);
         intent.putExtra("message", msg);
         intent.putExtra("matchId", id);

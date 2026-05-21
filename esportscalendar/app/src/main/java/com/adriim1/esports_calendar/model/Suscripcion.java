@@ -1,4 +1,4 @@
-package com.adriim1.esports_calendar;
+package com.adriim1.esports_calendar.model;
 
 public class Suscripcion {
     private Evento evento;

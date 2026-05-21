@@ -1,4 +1,4 @@
-package com.adriim1.esports_calendar;
+package com.adriim1.esports_calendar.api;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -9,7 +9,11 @@ import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 import java.util.List;
-import java.util.Map;
+
+import com.adriim1.esports_calendar.model.Anotacion;
+import com.adriim1.esports_calendar.model.ApiResponse;
+import com.adriim1.esports_calendar.model.Evento;
+import com.adriim1.esports_calendar.model.Suscripcion;
 import com.google.gson.annotations.SerializedName;
 import okhttp3.ResponseBody;
 

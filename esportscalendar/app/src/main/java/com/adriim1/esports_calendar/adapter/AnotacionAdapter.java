@@ -1,4 +1,4 @@
-package com.adriim1.esports_calendar;
+package com.adriim1.esports_calendar.adapter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -13,6 +13,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.adriim1.esports_calendar.api.ApiService;
+import com.adriim1.esports_calendar.R;
+import com.adriim1.esports_calendar.api.RetrofitClient;
+import com.adriim1.esports_calendar.model.Anotacion;
+import com.adriim1.esports_calendar.model.ApiResponse;
+
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;

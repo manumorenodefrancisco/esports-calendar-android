@@ -1,4 +1,4 @@
-package com.adriim1.esports_calendar;
+package com.adriim1.esports_calendar.receptor;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -9,7 +9,7 @@ import android.os.Build;
 import android.util.Log;
 import androidx.core.app.NotificationCompat;
 
-public class NotificationReceiver extends BroadcastReceiver {
+public class ReceptorNotis extends BroadcastReceiver {
     private static final String CHANNEL_ID = "esports_matches";
     private static final String TAG = "NotificationReceiver";
 

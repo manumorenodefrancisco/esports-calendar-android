@@ -1,4 +1,4 @@
-package com.adriim1.esports_calendar;
+package com.adriim1.esports_calendar.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
@@ -7,6 +7,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.adriim1.esports_calendar.api.ApiService;
+import com.adriim1.esports_calendar.R;
+import com.adriim1.esports_calendar.api.RetrofitClient;
+import com.adriim1.esports_calendar.model.ApiResponse;
 
 import retrofit2.Call;
 import retrofit2.Callback;

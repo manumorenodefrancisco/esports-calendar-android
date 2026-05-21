@@ -1,4 +1,4 @@
-package com.adriim1.esports_calendar;
+package com.adriim1.esports_calendar.fragment;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -24,7 +24,14 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.messaging.FirebaseMessaging;
+import com.adriim1.esports_calendar.api.ApiService;
+import com.adriim1.esports_calendar.R;
+import com.adriim1.esports_calendar.api.RetrofitClient;
+import com.adriim1.esports_calendar.adapter.AnotacionAdapter;
+import com.adriim1.esports_calendar.adapter.EventoAdapter;
+import com.adriim1.esports_calendar.model.Anotacion;
+import com.adriim1.esports_calendar.model.ApiResponse;
+import com.adriim1.esports_calendar.model.Evento;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -154,9 +161,9 @@ public class HomeFragment extends Fragment {
         tvGame.setText("Videojuego:");
         tvGame.setPadding(0, 10, 0, 10);
         layout.addView(tvGame);
-
         Spinner spinnerGame = new Spinner(getContext());
-        String[] games = {"Todos", "League of Legends", "Valorant", "CS:GO", "Dota 2", "Overwatch", "Rocket League"};
+        String[] games = {"Todos", "LoL", "Counter-Strike", "Dota 2", "EA Sports FC", "Rocket League", "Call of Duty", "PUBG", "Overwatch", "King of Glory",
+                "LoL Wild Rift", "Rainbow 6 Siege", "Valorant", "StarCraft Brood War", "StarCraft 2", "Mobile Legends: Bang Bang"};
         ArrayAdapter<String> gameAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, games);
         spinnerGame.setAdapter(gameAdapter);
         

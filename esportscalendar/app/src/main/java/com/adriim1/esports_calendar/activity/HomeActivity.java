@@ -1,9 +1,12 @@
-package com.adriim1.esports_calendar;
+package com.adriim1.esports_calendar.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+
+import com.adriim1.esports_calendar.receptor.ReceptorNotisReinicio;
+import com.adriim1.esports_calendar.R;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -29,5 +32,5 @@ public class HomeActivity extends AppCompatActivity {
             // contacto
         });
 
-        new NotisReceptorReinicio().onReceive(this, new Intent(Intent.ACTION_BOOT_COMPLETED));    }
+        new ReceptorNotisReinicio().onReceive(this, new Intent(Intent.ACTION_BOOT_COMPLETED));    }
 }
