@@ -47,8 +47,33 @@ public class RegistroActivity extends AppCompatActivity {
             String password1 = etPassword.getText().toString().trim();
             String password2 = etPassword2.getText().toString().trim();
 
-            if (email.isEmpty() || password1.isEmpty() || password2.isEmpty()) {
-                Toast.makeText(RegistroActivity.this, "Rellena todos los campos", Toast.LENGTH_SHORT).show();
+            if (name.isEmpty()) {
+                Toast.makeText(RegistroActivity.this, "El nombre es obligatorio", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (email.isEmpty()) {
+                Toast.makeText(RegistroActivity.this, "El email es obligatorio", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (!email.contains("@")) {
+                Toast.makeText(RegistroActivity.this, "El email debe contener @", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (password1.isEmpty()) {
+                Toast.makeText(RegistroActivity.this, "La contraseña es obligatoria", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (password1.length() < 6) {
+                Toast.makeText(RegistroActivity.this, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (password2.isEmpty()) {
+                Toast.makeText(RegistroActivity.this, "Confirma la contraseña", Toast.LENGTH_SHORT).show();
                 return;
             }
 

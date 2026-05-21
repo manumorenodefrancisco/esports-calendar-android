@@ -46,8 +46,23 @@ public class LoginActivity extends AppCompatActivity {
             String email = etEmail.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
 
-            if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(LoginActivity.this, "Email y contraseña son obligatorios", Toast.LENGTH_SHORT).show();
+            if (email.isEmpty()) {
+                Toast.makeText(LoginActivity.this, "El email es obligatorio", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (!email.contains("@")) {
+                Toast.makeText(LoginActivity.this, "El email debe contener @", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (password.isEmpty()) {
+                Toast.makeText(LoginActivity.this, "La contraseña es obligatoria", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (password.length() < 6) {
+                Toast.makeText(LoginActivity.this, "La contraseña debe tener al menos 6 caracteres", Toast.LENGTH_SHORT).show();
                 return;
             }
 
